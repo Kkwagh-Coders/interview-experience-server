@@ -1,4 +1,5 @@
 import express from 'express';
+import * as test from './controller/test.controller';
 
 const app = express();
 
@@ -10,6 +11,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+
+// Test Routes
+app.get('/test-admin', test.testAdmin);
+app.get('/test-user', test.testUser);
 
 // Home Route
 app.get('/', async (req, res) => {

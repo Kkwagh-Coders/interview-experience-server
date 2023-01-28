@@ -15,6 +15,6 @@ export interface Iuser {
     github, leetcode and linkedin are optional field
     union operator is used to make it optionally nullable
     using it, fields must be explicitely defined null 
+    -- just checked not able to implement above concept
 */
-
 export default Iuser;
