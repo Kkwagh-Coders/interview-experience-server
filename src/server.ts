@@ -1,6 +1,5 @@
 import { config } from 'dotenv';
 import { connectDB } from './config/database';
-
 import app from './app';
 
 // Dotenv config

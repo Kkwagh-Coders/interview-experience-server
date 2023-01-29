@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+mongoose.set('strictQuery', false);
 
 export const connectDB = () => {
   const MONGODB_URL = process.env['MONGODB_URL'];
