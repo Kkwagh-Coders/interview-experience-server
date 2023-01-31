@@ -8,8 +8,6 @@ import path from 'path';
 const MAIL_USER = process.env['MAIL_USER'];
 const MAIL_PASSWORD = process.env['MAIL_PASSWORD'];
 
-console.log(MAIL_USER, MAIL_PASSWORD);
-
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
