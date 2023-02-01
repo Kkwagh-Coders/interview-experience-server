@@ -2,6 +2,7 @@ export interface IUser {
   username: string;
   email: string;
   password: string;
+  isEmailVerified: boolean;
   branch: string;
   passingYear: string;
   designation: string;
