@@ -5,6 +5,8 @@ declare global {
       PORT: number;
       MONGODB_URL: string;
       SECRET_KEY: string;
+      MAIL_USER: string;
+      MAIL_PASSWORD: string;
     }
   }
 }
