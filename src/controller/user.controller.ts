@@ -1,10 +1,13 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import userServices from '../services/user.service';
 import bcrypt from 'bcryptjs';
 import { TypeRequestBody } from '../types/request.types';
 import { IUser } from '../types/user.types';
 import generateToken from '../utils/generateToken';
+import crypto from 'crypto';
+import sendForgotPasswordEmail from '../services/mail/sendForgotPasswordMail';
 
+const BASE_URL = 'http://localhost:3000/InterviewExperience';
 const EXPIRY_DAYS = 180;
 const cookieOptions = {
   httpOnly: true,
@@ -39,6 +42,9 @@ const userController = {
       if (!isPasswordCorrect) {
         return res.status(401).json({ message: 'User not found' });
       }
+
+      // set reset fields to null
+      userServices.unsetResetFields(email);
 
       // Check if email is verified or not
       if (!user.isEmailVerified) {
@@ -134,21 +140,111 @@ const userController = {
         github: github ? github : null,
         leetcode: leetcode ? leetcode : null,
         linkedin: linkedin ? linkedin : null,
+        resetPasswordToken: null,
+        resetPasswordExpiry: null,
       };
 
       // create user account
       await userServices.createUser(userData);
 
-      // TODO: Send email verification
+      // TODO : send Email Verification
 
-      return res.status(200).json({ message: 'User registered successful' });
+      return res.status(200).json({
+        message: 'Account created successfully, please verify your email....',
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
   },
-  // logoutUser: (req: Request, res: Response) => {},
-  // forgotPassword: (req: Request, res: Response) => {},
+
+  forgotPassword: async (
+    req: TypeRequestBody<{ email: string }>,
+    res: Response,
+  ) => {
+    const email = req.body.email;
+
+    // if email is undefined
+    if (!email) {
+      return res
+        .status(401)
+        .json({ message: 'Please enter all required fields ' });
+    }
+
+    try {
+      // check if email is not-registered
+      const user = await userServices.findUser(email);
+      if (!user) {
+        return res.status(401).json({ message: 'No such email found' });
+      }
+
+      // TODO : Edge case when the randomly generated token may be same
+      // generate a token
+      const resetPasswordToken = crypto.randomBytes(16).toString('hex');
+      const resetPasswordExpiry = 1000 * 60 * 60; // 1 hour
+
+      // set reset fields
+      await userServices.setResetFields(email, {
+        resetPasswordToken,
+        resetPasswordExpiry,
+      });
+
+      // send email
+      const verificationURL =
+        BASE_URL + '/' + 'reset-password/' + resetPasswordToken;
+      sendForgotPasswordEmail(email, verificationURL, user.username);
+
+      // return response
+      // TODO : change Response
+      return res.status(200).json({
+        message: 'A password reset link is sent to ' + email + '.',
+        data: {
+          resetPasswordToken,
+          resetPasswordExpiry,
+          verificationURL,
+          email,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
+
+  resetPassword: async (
+    req: TypeRequestBody<{ newPassword: string }>,
+    res: Response,
+  ) => {
+    const newPassword = req.body.newPassword;
+    if (!newPassword) {
+      return res
+        .status(401)
+        .json({ message: 'Please enter all required fields ' });
+    }
+    try {
+      const resetPasswordToken = req.params['token'];
+      console.log(resetPasswordToken, newPassword);
+      const user = await userServices.findUserWithToken(resetPasswordToken);
+      if (!user) {
+        return res
+          .status(401)
+          .json({ message: 'Password reset Link is invalid or has expired.' });
+      }
+
+      console.log('user found');
+      await userServices.resetPassword(resetPasswordToken, newPassword);
+
+      console.log('password changed');
+      return res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
+  logoutUser: (req: Request, res: Response) => {
+    res.clearCookie('token');
+    return res.status(200).json({ message: 'User Logout successful' });
+  },
 };
 
 export default userController;
