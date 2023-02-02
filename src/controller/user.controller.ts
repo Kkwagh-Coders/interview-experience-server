@@ -3,11 +3,16 @@ import { Request, Response } from 'express';
 import sendForgotPasswordEmail from '../services/mail/sendForgotPasswordMail';
 import userServices from '../services/user.service';
 import { TypeRequestBody } from '../types/request.types';
-import { IForgotPasswordToken } from '../types/token.types';
+import {
+  IEmailVerificationToken,
+  IForgotPasswordToken,
+} from '../types/token.types';
 import { IUser } from '../types/user.types';
 import decodeToken from '../utils/token/decodeToken';
 import generateAuthToken from '../utils/token/generateAuthToken';
 import generateForgotPasswordToken from '../utils/token/generateForgotPasswordToken';
+import generateEmailVerificationToken from '../utils/token/generateEmailVerificationToken';
+import sendEmailVerificationMail from '../services/mail/sendEmailVerificationMail';
 
 const EXPIRY_DAYS = 180;
 const cookieOptions = {
@@ -26,7 +31,7 @@ const userController = {
     // if email or password is undefined
     if (!email || !password) {
       return res.status(401).json({
-        message: 'User not found',
+        message: 'Incorrect Username or Password',
       });
     }
 
@@ -35,14 +40,18 @@ const userController = {
 
       // if no such user found.
       if (!user) {
-        return res.status(401).json({ message: 'User not found' });
+        return res
+          .status(401)
+          .json({ message: 'Incorrect Username or Password' });
       }
 
       // compare the passwords
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
       if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'User not found' });
+        return res
+          .status(401)
+          .json({ message: 'Incorrect Username or Password' });
       }
 
       // Check if email is verified or not
@@ -142,9 +151,13 @@ const userController = {
       };
 
       // create user account
-      await userServices.createUser(userData);
+      const user = await userServices.createUser(userData);
 
-      // TODO : send Email Verification
+      // Generate token
+      const token = generateEmailVerificationToken(user._id, email, false);
+
+      // send email to the user for verification
+      await sendEmailVerificationMail(email, token, user.username);
 
       return res.status(200).json({
         message: 'Account created successfully, please verify your email....',
@@ -234,6 +247,39 @@ const userController = {
   logoutUser: (req: Request, res: Response) => {
     res.clearCookie('token');
     return res.status(200).json({ message: 'User Logout successful' });
+  },
+  verifyEmail: async (req: Request, res: Response) => {
+    const emailVerificationToken = req.params['token'];
+
+    try {
+      const { email, isAdmin } = decodeToken(
+        emailVerificationToken,
+      ) as IEmailVerificationToken;
+
+      // Check if it is a correct reset password link
+      if (isAdmin) {
+        return res.status(401).json({ message: 'Please Register Again' });
+      }
+
+      const user = await userServices.findUser(email);
+      if (!user) {
+        return res
+          .status(401)
+          .json({ message: 'User Not Found with the Email' });
+      }
+
+      // Update the user email field
+      await userServices.verifyUserEmail(email);
+
+      const CLIENT_BASE_URL = process.env['CLIENT_BASE_URL'];
+
+      if (!CLIENT_BASE_URL) return res.redirect('/');
+      return res.redirect(CLIENT_BASE_URL);
+    } catch (error) {
+      // Send a simple html to user if error
+      res.setHeader('Content-type', 'text/html');
+      return res.send('<h1>Error Authenticating</h1>');
+    }
   },
 };
 

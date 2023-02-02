@@ -19,6 +19,10 @@ const userServices = {
   resetPassword: (email: string, newPassword: string) => {
     return UserModel.findOneAndUpdate({ email }, { password: newPassword });
   },
+
+  verifyUserEmail: (email: string) => {
+    return UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
+  },
 };
 
 export default userServices;

@@ -6,9 +6,11 @@
     <title>User Email Verification</title>
   </head>
   <body>
+    <h1>Hi, {{username}}!</h1>
     <h1>Please Verify your email by clicking the below link!!</h1>
-    <a href='{{verificationUrl}}'>Verify</a>
+    <a href='{{verificationURL}}'>{{verificationURL}}</a>
 
     <p>If not registered, ignore!!</p>
+    <p>From: {{officialName}}</p>
   </body>
 </html>

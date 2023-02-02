@@ -8,6 +8,7 @@ declare global {
       MAIL_USER: string;
       MAIL_PASSWORD: string;
       CLIENT_BASE_URL: string;
+      SERVER_BASE_URL: string;
     }
   }
 }

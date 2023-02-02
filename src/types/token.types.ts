@@ -11,3 +11,9 @@ export interface IForgotPasswordToken {
   email: string;
   isAdmin: boolean;
 }
+
+export interface IEmailVerificationToken {
+  id: Types.ObjectId;
+  email: string;
+  isAdmin: boolean;
+}
