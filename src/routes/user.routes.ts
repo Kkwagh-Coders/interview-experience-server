@@ -11,6 +11,5 @@ router.post('/reset-password/:token', userController.resetPassword);
 router.post('/logout', userController.logoutUser);
 router.get('/verify-email/:token', userController.verifyEmail);
 router.delete('/', isUserAuth, userController.deleteUser);
-router.get('/status', isUserAuth, userController.isUserLoggedIn);
 
 export default router;

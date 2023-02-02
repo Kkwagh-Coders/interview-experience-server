@@ -316,34 +316,6 @@ const userController = {
         .json({ message: 'Error during Deletion, Please try again later' });
     }
   },
-  isUserLoggedIn: async (
-    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
-    res: Response,
-  ) => {
-    // Find the user and return the appropriate data
-    const userData = req.body.authTokenData;
-    const user = await userServices.findUser(userData.email);
-
-    // Check if user exits or not
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    // Since it is coming from the middleware it must be logged in
-    return res.status(200).json({
-      isLoggedIn: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        branch: user.branch,
-        passingYear: user.passingYear,
-        designation: user.designation,
-        about: user.about,
-        github: user.github,
-        leetcode: user.leetcode,
-        linkedin: user.linkedin,
-      },
-    });
-  },
 };
 
 export default userController;
