@@ -10,6 +10,4 @@ export interface IUser {
   github: string | null;
   leetcode: string | null;
   linkedin: string | null;
-  resetPasswordToken: string | null;
-  resetPasswordExpiry: Date | null;
 }

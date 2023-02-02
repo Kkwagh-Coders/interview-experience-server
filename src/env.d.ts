@@ -7,6 +7,7 @@ declare global {
       SECRET_KEY: string;
       MAIL_USER: string;
       MAIL_PASSWORD: string;
+      CLIENT_BASE_URL: string;
     }
   }
 }

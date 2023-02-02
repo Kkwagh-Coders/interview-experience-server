@@ -2,9 +2,15 @@ import sendMail from './sendMail';
 
 const sendForgotPasswordMail = async (
   email: string,
-  verificationURL: string,
+  token: string,
   username: string,
 ) => {
+  const CLIENT_BASE_URL = process.env['CLIENT_BASE_URL'];
+  if (!CLIENT_BASE_URL) {
+    throw new Error('CLIENT_BASE_URL not Defined');
+  }
+
+  const verificationURL = CLIENT_BASE_URL + '/' + 'reset-password/' + token;
   const senderEmail = process.env['MAIL_USER'];
   const emailSubject = 'Reset Password Link';
   const emailTemplate = 'forgot_password_email';

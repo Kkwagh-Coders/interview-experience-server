@@ -14,8 +14,6 @@ const userSchema = new Schema<IUser>({
   github: { type: String, required: false },
   leetcode: { type: String, required: false },
   linkedin: { type: String, required: false },
-  resetPasswordToken: { type: String, required: false },
-  resetPasswordExpiry: { type: String, required: false },
 });
 
 export default mongoose.model<IUser>('User', userSchema);

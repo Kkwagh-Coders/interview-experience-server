@@ -16,36 +16,8 @@ const userServices = {
     return UserModel.deleteOne({ _id: id });
   },
 
-  setResetFields: (
-    email: string,
-    update: { resetPasswordToken: string; resetPasswordExpiry: number },
-  ) => {
-    return UserModel.findOneAndUpdate({ email }, update);
-  },
-
-  unsetResetFields: (email: string) => {
-    return UserModel.findByIdAndUpdate(
-      { email },
-      { resetPasswordToken: null, resetPasswordExpiry: null },
-    );
-  },
-
-  findUserWithToken: (resetPasswordToken: string) => {
-    return UserModel.findOne({
-      resetPasswordToken,
-      resetPasswordExpiry: { $gt: Date.now() },
-    });
-  },
-
-  resetPassword: (resetPasswordToken: string, newPassword: string) => {
-    return UserModel.findOneAndUpdate(
-      { resetPasswordToken },
-      {
-        password: newPassword,
-        resetPasswordToken: null,
-        resetPasswordExpiry: null,
-      },
-    );
+  resetPassword: (email: string, newPassword: string) => {
+    return UserModel.findOneAndUpdate({ email }, { password: newPassword });
   },
 };
 

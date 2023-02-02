@@ -5,3 +5,9 @@ export interface IAuthToken {
   email: string;
   isAdmin: boolean;
 }
+
+export interface IForgotPasswordToken {
+  id: Types.ObjectId;
+  email: string;
+  isAdmin: boolean;
+}

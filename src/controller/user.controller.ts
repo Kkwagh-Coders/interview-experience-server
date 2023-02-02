@@ -1,13 +1,14 @@
-import { Request, Response } from 'express';
-import userServices from '../services/user.service';
 import bcrypt from 'bcryptjs';
-import { TypeRequestBody } from '../types/request.types';
-import { IUser } from '../types/user.types';
-import generateToken from '../utils/generateToken';
-import crypto from 'crypto';
+import { Request, Response } from 'express';
 import sendForgotPasswordEmail from '../services/mail/sendForgotPasswordMail';
+import userServices from '../services/user.service';
+import { TypeRequestBody } from '../types/request.types';
+import { IForgotPasswordToken } from '../types/token.types';
+import { IUser } from '../types/user.types';
+import decodeToken from '../utils/token/decodeToken';
+import generateAuthToken from '../utils/token/generateAuthToken';
+import generateForgotPasswordToken from '../utils/token/generateForgotPasswordToken';
 
-const BASE_URL = 'http://localhost:3000/InterviewExperience';
 const EXPIRY_DAYS = 180;
 const cookieOptions = {
   httpOnly: true,
@@ -39,12 +40,10 @@ const userController = {
 
       // compare the passwords
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
       if (!isPasswordCorrect) {
         return res.status(401).json({ message: 'User not found' });
       }
-
-      // set reset fields to null
-      userServices.unsetResetFields(email);
 
       // Check if email is verified or not
       if (!user.isEmailVerified) {
@@ -52,7 +51,7 @@ const userController = {
       }
 
       // generate JWT token
-      const token = generateToken(user._id, email, false);
+      const token = generateAuthToken(user._id, email, false);
 
       //setting cookie
       res.cookie('token', token, cookieOptions);
@@ -113,7 +112,7 @@ const userController = {
     }
 
     try {
-      // check if email is registerd
+      // check if email is registered
       const oldUser = await userServices.findUser(email);
 
       if (oldUser && oldUser.isEmailVerified) {
@@ -140,8 +139,6 @@ const userController = {
         github: github ? github : null,
         leetcode: leetcode ? leetcode : null,
         linkedin: linkedin ? linkedin : null,
-        resetPasswordToken: null,
-        resetPasswordExpiry: null,
       };
 
       // create user account
@@ -159,7 +156,7 @@ const userController = {
   },
 
   forgotPassword: async (
-    req: TypeRequestBody<{ email: string }>,
+    req: TypeRequestBody<{ email?: string }>,
     res: Response,
   ) => {
     const email = req.body.email;
@@ -178,67 +175,60 @@ const userController = {
         return res.status(401).json({ message: 'No such email found' });
       }
 
-      // TODO : Edge case when the randomly generated token may be same
-      // generate a token
-      const resetPasswordToken = crypto.randomBytes(16).toString('hex');
-      const resetPasswordExpiry = 1000 * 60 * 60; // 1 hour
+      // Creating a jwt token and sending it to the user
+      const token = generateForgotPasswordToken(user._id, email, false);
 
-      // set reset fields
-      await userServices.setResetFields(email, {
-        resetPasswordToken,
-        resetPasswordExpiry,
-      });
+      // send email to the user
+      sendForgotPasswordEmail(email, token, user.username);
 
-      // send email
-      const verificationURL =
-        BASE_URL + '/' + 'reset-password/' + resetPasswordToken;
-      sendForgotPasswordEmail(email, verificationURL, user.username);
-
-      // return response
-      // TODO : change Response
-      return res.status(200).json({
-        message: 'A password reset link is sent to ' + email + '.',
-        data: {
-          resetPasswordToken,
-          resetPasswordExpiry,
-          verificationURL,
-          email,
-        },
-      });
+      return res
+        .status(200)
+        .json({ message: `A password reset link is sent to ${email}` });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return res.status(500).json({ message: 'Error, Please try again later' });
     }
   },
 
   resetPassword: async (
-    req: TypeRequestBody<{ newPassword: string }>,
+    req: TypeRequestBody<{ newPassword?: string }>,
     res: Response,
   ) => {
     const newPassword = req.body.newPassword;
+    const resetPasswordToken = req.params['token'];
+
     if (!newPassword) {
-      return res
-        .status(401)
-        .json({ message: 'Please enter all required fields ' });
+      return res.status(401).json({ message: 'Please enter new Password ' });
     }
+
     try {
-      const resetPasswordToken = req.params['token'];
-      console.log(resetPasswordToken, newPassword);
-      const user = await userServices.findUserWithToken(resetPasswordToken);
+      const tokenData = decodeToken(resetPasswordToken) as IForgotPasswordToken;
+
+      // Check if it is a correct reset password link
+      if (tokenData.isAdmin) {
+        return res
+          .status(401)
+          .json({ message: 'Please create a new Reset Password Link' });
+      }
+
+      const user = await userServices.findUser(tokenData.email);
       if (!user) {
         return res
           .status(401)
-          .json({ message: 'Password reset Link is invalid or has expired.' });
+          .json({ message: 'Please create a new Reset Password Link' });
       }
 
-      console.log('user found');
-      await userServices.resetPassword(resetPasswordToken, newPassword);
+      // Hash the password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
-      console.log('password changed');
+      // Resetting the password
+      await userServices.resetPassword(tokenData.email, hashedNewPassword);
       return res.status(200).json({ message: 'Password changed successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return res
+        .status(500)
+        .json({ message: 'Error, generate new password link' });
     }
   },
   logoutUser: (req: Request, res: Response) => {
