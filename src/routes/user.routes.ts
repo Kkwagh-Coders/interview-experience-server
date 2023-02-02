@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import userController from '../controller/user.controller';
+import isUserAuth from '../middleware/isUserAuth';
 
 const router = Router();
 
@@ -9,5 +10,7 @@ router.post('/forgot-password', userController.forgotPassword);
 router.post('/reset-password/:token', userController.resetPassword);
 router.post('/logout', userController.logoutUser);
 router.get('/verify-email/:token', userController.verifyEmail);
+router.delete('/', isUserAuth, userController.deleteUser);
+router.get('/status', isUserAuth, userController.isUserLoggedIn);
 
 export default router;

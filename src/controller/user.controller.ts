@@ -1,18 +1,19 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
+import sendEmailVerificationMail from '../services/mail/sendEmailVerificationMail';
 import sendForgotPasswordEmail from '../services/mail/sendForgotPasswordMail';
 import userServices from '../services/user.service';
 import { TypeRequestBody } from '../types/request.types';
 import {
+  IAuthToken,
   IEmailVerificationToken,
   IForgotPasswordToken,
 } from '../types/token.types';
 import { IUser } from '../types/user.types';
 import decodeToken from '../utils/token/decodeToken';
 import generateAuthToken from '../utils/token/generateAuthToken';
-import generateForgotPasswordToken from '../utils/token/generateForgotPasswordToken';
 import generateEmailVerificationToken from '../utils/token/generateEmailVerificationToken';
-import sendEmailVerificationMail from '../services/mail/sendEmailVerificationMail';
+import generateForgotPasswordToken from '../utils/token/generateForgotPasswordToken';
 
 const EXPIRY_DAYS = 180;
 const cookieOptions = {
@@ -280,6 +281,45 @@ const userController = {
       res.setHeader('Content-type', 'text/html');
       return res.send('<h1>Error Authenticating</h1>');
     }
+  },
+  deleteUser: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    // As we are running middleware no need to use ? on authTokenData
+    const userData = req.body.authTokenData;
+
+    if (!userData) {
+      return res.status(403).json({ message: 'User not logged in' });
+    }
+
+    try {
+      // Delete the user Account
+      await userServices.deleteUser(userData.id);
+      return res.status(200).json({ message: 'User Account deleted' });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ message: 'Error during Deletion, Please try again later' });
+    }
+  },
+  isUserLoggedIn: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    // Find the user and return the appropriate data
+    const userData = req.body.authTokenData;
+    const user = await userServices.findUser(userData.email);
+
+    // Check if user exits or not
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Since it is coming from the middleware it must be logged in
+    return res.status(200).json({
+      isLoggedIn: true,
+      user: { username: user.username, email: user.email },
+    });
   },
 };
 
