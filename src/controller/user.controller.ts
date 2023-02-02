@@ -66,9 +66,21 @@ const userController = {
       //setting cookie
       res.cookie('token', token, cookieOptions);
 
+      // Remove the password
       return res.status(200).json({
         message: 'Login Successful',
-        user: { username: user.username, email: user.email },
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          branch: user.branch,
+          passingYear: user.passingYear,
+          designation: user.designation,
+          about: user.about,
+          github: user.github,
+          leetcode: user.leetcode,
+          linkedin: user.linkedin,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -318,7 +330,18 @@ const userController = {
     // Since it is coming from the middleware it must be logged in
     return res.status(200).json({
       isLoggedIn: true,
-      user: { username: user.username, email: user.email },
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        branch: user.branch,
+        passingYear: user.passingYear,
+        designation: user.designation,
+        about: user.about,
+        github: user.github,
+        leetcode: user.leetcode,
+        linkedin: user.linkedin,
+      },
     });
   },
 };
