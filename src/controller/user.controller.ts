@@ -217,11 +217,16 @@ const userController = {
   },
 
   resetPassword: async (
-    req: TypeRequestBody<{ newPassword?: string }>,
+    req: TypeRequestBody<{ email?: string; newPassword?: string }>,
     res: Response,
   ) => {
+    const email = req.body.email;
     const newPassword = req.body.newPassword;
     const resetPasswordToken = req.params['token'];
+
+    if (!email) {
+      return res.status(401).json({ message: 'Please enter new Email' });
+    }
 
     if (!newPassword) {
       return res.status(401).json({ message: 'Please enter new Password ' });
@@ -229,6 +234,10 @@ const userController = {
 
     try {
       const tokenData = decodeToken(resetPasswordToken) as IForgotPasswordToken;
+
+      if (email !== tokenData.email) {
+        return res.status(403).json({ message: 'Reset Link is not valid' });
+      }
 
       // Check if it is a correct reset password link
       if (tokenData.isAdmin) {
