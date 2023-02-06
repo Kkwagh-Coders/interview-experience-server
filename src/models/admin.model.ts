@@ -5,6 +5,7 @@ import { IAdmin } from '../types/admin.types';
 const adminSchema = new Schema<IAdmin>({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  isEmailVerified: { type: Boolean, required: true },
   password: { type: String, required: true },
 });
 
