@@ -61,7 +61,7 @@ const userController = {
       }
 
       // generate JWT token
-      const token = generateAuthToken(user._id, email, false);
+      const token = generateAuthToken(user._id, email, user.isAdmin);
 
       //setting cookie
       res.cookie('token', token, cookieOptions);
@@ -73,6 +73,7 @@ const userController = {
           id: user._id,
           username: user.username,
           email: user.email,
+          isAdmin: user.isAdmin,
           branch: user.branch,
           passingYear: user.passingYear,
           designation: user.designation,
@@ -153,6 +154,7 @@ const userController = {
         username,
         email,
         password: hashPassword,
+        isAdmin: false,
         isEmailVerified: false,
         branch,
         passingYear,
@@ -167,7 +169,11 @@ const userController = {
       const user = await userServices.createUser(userData);
 
       // Generate token
-      const token = generateEmailVerificationToken(user._id, email, false);
+      const token = generateEmailVerificationToken(
+        user._id,
+        email,
+        user.isAdmin,
+      );
 
       // send email to the user for verification
       await sendEmailVerificationMail(email, token, user.username);
@@ -202,7 +208,7 @@ const userController = {
       }
 
       // Creating a jwt token and sending it to the user
-      const token = generateForgotPasswordToken(user._id, email, false);
+      const token = generateForgotPasswordToken(user._id, email, user.isAdmin);
 
       // send email to the user
       sendForgotPasswordEmail(email, token, user.username);
@@ -225,7 +231,7 @@ const userController = {
     const resetPasswordToken = req.params['token'];
 
     if (!email) {
-      return res.status(401).json({ message: 'Please enter new Email' });
+      return res.status(401).json({ message: 'Please enter Email' });
     }
 
     if (!newPassword) {
@@ -237,13 +243,6 @@ const userController = {
 
       if (email !== tokenData.email) {
         return res.status(403).json({ message: 'Reset Link is not valid' });
-      }
-
-      // Check if it is a correct reset password link
-      if (tokenData.isAdmin) {
-        return res
-          .status(401)
-          .json({ message: 'Please create a new Reset Password Link' });
       }
 
       const user = await userServices.findUser(tokenData.email);
@@ -274,14 +273,9 @@ const userController = {
     const emailVerificationToken = req.params['token'];
 
     try {
-      const { email, isAdmin } = decodeToken(
+      const { email } = decodeToken(
         emailVerificationToken,
       ) as IEmailVerificationToken;
-
-      // Check if it is a correct reset password link
-      if (isAdmin) {
-        return res.status(401).json({ message: 'Please Register Again' });
-      }
 
       const user = await userServices.findUser(email);
       if (!user) {
@@ -323,6 +317,58 @@ const userController = {
       return res
         .status(500)
         .json({ message: 'Error during Deletion, Please try again later' });
+    }
+  },
+  getLoginStatus: async (req: Request, res: Response) => {
+    const token = req.cookies['token'];
+
+    // We are using 200 because the request was successful and we return isLoggedIn false
+    if (!token) {
+      return res
+        .status(200)
+        .json({ isLoggedIn: false, isAdmin: false, admin: null, user: null });
+    }
+
+    try {
+      // Verify the token
+      const authTokenData = decodeToken(token) as IAuthToken;
+
+      // Check if the user
+      const user = await userServices.findUser(authTokenData.email);
+
+      if (!user) {
+        return res.status(200).json({
+          isLoggedIn: false,
+          isAdmin: false,
+          admin: null,
+          user: null,
+        });
+      }
+
+      const userResponseData = {
+        username: user.username,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        branch: user.branch,
+        passingYear: user.passingYear,
+        designation: user.designation,
+        about: user.about,
+        github: user.github,
+        leetcode: user.leetcode,
+        linkedin: user.linkedin,
+      };
+
+      return res.status(200).json({
+        isLoggedIn: true,
+        isAdmin: user.isAdmin,
+        admin: null,
+        user: userResponseData,
+      });
+    } catch (err) {
+      // We return 400 because the request failed for unknown reason
+      return res
+        .status(400)
+        .json({ isLoggedIn: false, isAdmin: false, admin: null, user: null });
     }
   },
 };
