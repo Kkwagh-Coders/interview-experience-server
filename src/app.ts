@@ -22,7 +22,6 @@ app.use(cookieParser());
 
 // Routes
 app.use('/user', routes.userRoutes);
-app.use('/status', routes.statusRoutes);
 
 // Home Route
 app.get('/', async (req, res) => {
