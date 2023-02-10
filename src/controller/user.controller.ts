@@ -207,6 +207,10 @@ const userController = {
         return res.status(401).json({ message: 'No such email found' });
       }
 
+      if (!user.isEmailVerified) {
+        return res.status(400).json({ message: 'Please Verify your Email' });
+      }
+
       // Creating a jwt token and sending it to the user
       const token = generateForgotPasswordToken(user._id, email, user.isAdmin);
 
