@@ -14,12 +14,6 @@ const isUserAuth = (req: Request, res: Response, next: NextFunction) => {
     // Verify the token
     const authTokenData = decodeToken(token) as IAuthToken;
 
-    // Check if the user is admin or not
-    if (authTokenData.isAdmin) {
-      res.clearCookie('token');
-      return res.status(401).json({ message: 'User not LoggedIn' });
-    }
-
     // Adding token data to req
     req.body.authTokenData = authTokenData;
 
