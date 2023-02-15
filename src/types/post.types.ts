@@ -4,7 +4,7 @@ import { IComment } from './comment.types';
 export interface IPost {
   title: string;
   content: string;
-  userid: Types.ObjectId;
+  userId: Types.ObjectId;
   company: string;
   role: string;
   postType: string;
