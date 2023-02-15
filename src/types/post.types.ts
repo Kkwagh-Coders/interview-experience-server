@@ -19,3 +19,16 @@ export interface IPost {
   tags: string[];
   comments: IComment[];
 }
+
+export interface IPostForm {
+  title: string;
+  content: string;
+  userId: Types.ObjectId;
+  company: string;
+  role: string;
+  postType: string;
+  domain: string;
+  rating: number;
+  status: string;
+  tags: string[];
+}
