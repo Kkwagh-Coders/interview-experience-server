@@ -14,6 +14,7 @@ export interface IPost {
   createdAt: Date;
   upVotes: [Types.ObjectId];
   downVotes: [Types.ObjectId];
+  views: number;
   bookmarks: [Types.ObjectId];
   tags: [string];
   comments: [IComment];

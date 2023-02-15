@@ -29,6 +29,7 @@ const postSchema = new Schema<IPost>({
   createdAt: { type: Date, default: Date.now },
   upVotes: [{ type: Types.ObjectId, ref: 'User' }],
   downVotes: [{ type: Types.ObjectId, ref: 'User' }],
+  views: { type: Number, default: 0 },
   bookmarks: [Schema.Types.ObjectId],
   tags: [String],
   comments: [commentSchema],
