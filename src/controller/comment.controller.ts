@@ -16,6 +16,9 @@ const commentController = {
   createCommentReply: async (Req: Request, res: Response) => {
     return res.status(200).json({ message: 'in create nested comment' });
   },
+  deleteCommentReply: async (Req: Request, res: Response) => {
+    return res.status(200).json({ message: 'in create nested comment' });
+  },
 };
 
 export default commentController;

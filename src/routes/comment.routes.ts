@@ -5,12 +5,29 @@ import isUserAuth from '../middleware/isUserAuth';
 const router = Router();
 
 // TODO : finalize endpoints
-router.get('', isUserAuth, commentController.getComment);
-router.post('/', isUserAuth, commentController.createComment);
-router.delete('/', isUserAuth, commentController.deleteComment);
+router.get('/:postid', isUserAuth, commentController.getComment);
+router.post('/:postid', isUserAuth, commentController.createComment);
+router.delete(
+  '/:postid/:commentid',
+  isUserAuth,
+  commentController.deleteComment,
+);
 
-// TODO: nested comments or replies [Post id and comment id will be passed in search parameters and body]
-router.get('/reply', isUserAuth, commentController.getCommentReplies);
-router.post('/reply', isUserAuth, commentController.createCommentReply);
+// TODO: finalize endpoints
+router.get(
+  '/replies/:postid/:commentid',
+  isUserAuth,
+  commentController.getCommentReplies,
+);
+router.post(
+  '/replies/:postid/:commentid',
+  isUserAuth,
+  commentController.createCommentReply,
+);
 
+router.delete(
+  '/replies/:postid/:commentid/:replyid',
+  isUserAuth,
+  commentController.deleteCommentReply,
+);
 export default router;
