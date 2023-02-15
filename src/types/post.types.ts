@@ -12,10 +12,10 @@ export interface IPost {
   rating: number;
   status: string;
   createdAt: Date;
-  upVotes: [Types.ObjectId];
-  downVotes: [Types.ObjectId];
+  upVotes: Types.ObjectId[];
+  downVotes: Types.ObjectId[];
   views: number;
-  bookmarks: [Types.ObjectId];
-  tags: [string];
-  comments: [IComment];
+  bookmarks: Types.ObjectId[];
+  tags: string[];
+  comments: IComment[];
 }

@@ -5,5 +5,5 @@ export interface IComment {
   userId: Types.ObjectId;
   content: string;
   createdAt: Date;
-  replies: [IReply];
+  replies: IReply[];
 }
