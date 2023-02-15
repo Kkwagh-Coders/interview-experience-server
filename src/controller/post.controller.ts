@@ -8,7 +8,7 @@ const postController = {
   getDisplayPost: async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'in get particular Post' });
   },
-  getUserBoomarkedPost: async (req: Request, res: Response) => {
+  getUserBookmarkedPost: async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'in get user bookmarked Post' });
   },
   getUserPost: async (req: Request, res: Response) => {
