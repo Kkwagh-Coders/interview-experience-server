@@ -32,3 +32,25 @@ export interface IPostForm {
   status: string;
   tags: string[];
 }
+
+export interface IPostDisplay {
+  title: string;
+  content: string;
+  userId: {
+    _id: Types.ObjectId;
+    username: string;
+  };
+  company: string;
+  role: string;
+  postType: string;
+  domain: string;
+  rating: number;
+  status: string;
+  createdAt: Date;
+  upVotes: Types.ObjectId[];
+  downVotes: Types.ObjectId[];
+  views: number;
+  bookmarks: Types.ObjectId[];
+  tags: string[];
+  comments: IComment[];
+}

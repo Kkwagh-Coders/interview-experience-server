@@ -1,22 +1,86 @@
 import { Request, Response } from 'express';
 import { DeleteResult } from 'mongodb';
-import { Types } from 'mongoose';
-import postServices from '../services/post.service';
 import { IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
+import postServices from '../services/post.service';
+import mongoose, { mongo, Types } from 'mongoose';
 
 const postController = {
   // TODO: finalize function names
   getAllPost: async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'in get Post' });
   },
-  getDisplayPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get particular Post' });
+
+  getDisplayPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    const postId = req.params['id'];
+
+    // check if the id is a valid mongodb id;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(404).json({ message: 'No such Post found' });
+    }
+    try {
+      // increment the value of views by 1 and return the post with populated user data
+      const post = await postServices.getPost(postId);
+      if (!post) {
+        return res.status(404).json({ message: 'No such Post found' });
+      }
+      const postAuthor = post.userId.username;
+      const postAuthorId = post.userId._id;
+      // get the userid
+      const userId = req.body.authTokenData.id;
+
+      //check if the user has bookmarked the current post or not?
+      const isBookmarked = post.bookmarks.includes(userId);
+
+      // calculate vote count
+      const voteCount = post.upVotes.length - post.downVotes.length;
+
+      // check whether user has upvoted or downvoted the post
+      const isUpvoted = post.upVotes.includes(userId);
+      const isDownVoted = post.downVotes.includes(userId);
+      const commentCount = post.comments.length;
+
+      return res.status(200).json({
+        message: 'post fetched successfully',
+        post: {
+          title: post.title,
+          content: post.content,
+          comapany: post.company,
+          role: post.role,
+          postType: post.postType,
+          domain: post.domain,
+          rating: post.rating,
+          createdAt: post.createdAt,
+          voteCount,
+          views: post.views,
+          tags: post.tags,
+          postAuthorId,
+          commentCount,
+          isBookmarked,
+          postAuthor,
+          isUpvoted,
+          isDownVoted,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
+
   getUserBookmarkedPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get user bookmarked Post' });
+    const userId = req.body.authTokenData.id;
+    console.log(userId);
+
+    try {
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
+
   getUserPost: async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'in get user Post' });
   },
@@ -89,6 +153,8 @@ const postController = {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
+
+    // TODO: save the post in the user model in the userPost section
   },
   deletePost: async (
     req: TypeRequestBody<{
