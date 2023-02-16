@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import { DeleteResult } from 'mongodb';
+import { Types } from 'mongoose';
+import postServices from '../services/post.service';
 import { IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
-import postServices from '../services/post.service';
 
 const postController = {
   // TODO: finalize function names
@@ -88,8 +90,49 @@ const postController = {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
   },
-  deletePost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in delete Post' });
+  deletePost: async (
+    req: TypeRequestBody<{
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { authTokenData } = req.body;
+    const userId = authTokenData.id.toString();
+
+    const postId = req.params['id'];
+    if (!Types.ObjectId.isValid(postId)) {
+      return res
+        .status(500)
+        .json({ message: 'Please provide a valid Post to Delete' });
+    }
+
+    let postDeleteResponse: DeleteResult | null = null;
+    try {
+      // If user is admin then direct delete the post
+      // Else delete the post when both post and userId matches
+      if (authTokenData.isAdmin) {
+        postDeleteResponse = await postServices.deletePost(postId);
+      } else {
+        postDeleteResponse = await postServices.deletePostUsingAuthorId(
+          postId,
+          userId,
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong...' });
+    }
+
+    // Check the conditions if the post is successfully deleted or not
+    if (!postDeleteResponse.acknowledged) {
+      return res.status(400).json({ message: 'Something went wrong...' });
+    }
+
+    if (postDeleteResponse.deletedCount === 0) {
+      return res.status(404).json({ message: 'Post Could not be Delete' });
+    }
+
+    return res.status(200).json({ message: 'Post Deleted Successfully' });
   },
 };
 
