@@ -102,7 +102,7 @@ const postController = {
     const postId = req.params['id'];
     if (!Types.ObjectId.isValid(postId)) {
       return res
-        .status(500)
+        .status(404)
         .json({ message: 'Please provide a valid Post to Delete' });
     }
 
