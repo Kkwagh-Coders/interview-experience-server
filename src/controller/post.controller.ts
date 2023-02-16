@@ -82,7 +82,7 @@ const postController = {
       const post = await postServices.createPost(postData);
       return res
         .status(200)
-        .json({ message: 'Post Created Successfully', post });
+        .json({ message: 'Post Created Successfully', postId: post._id });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
