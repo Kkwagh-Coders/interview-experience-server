@@ -71,11 +71,45 @@ const postController = {
     }
   },
 
-  getUserBookmarkedPost: async (req: Request, res: Response) => {
+  getUserBookmarkedPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
     const userId = req.body.authTokenData.id;
-    console.log(userId);
+
+    // queryPage should start from 1
+    const queryPage = req.query['page'];
+
+    // if page no is invalid;
+    if (queryPage === undefined || queryPage === '') {
+      return res.status(404).json({ message: 'No such page found' });
+    }
+
+    //converting string to number
+    // for limit it is decremented by 1
+    const pageNo = +queryPage - 1;
+
+    console.log(pageNo);
+    if (Number.isNaN(pageNo) || pageNo < 0) {
+      return res.status(404).json({ message: 'No such page found' });
+    }
+
+    const LIMIT = 1;
+    const skip = LIMIT * pageNo;
 
     try {
+      const response = await postServices.getUserBookmarkedPost(
+        userId,
+        LIMIT,
+        skip,
+      );
+      if (response.length === 0) {
+        return res.status(404).json({ message: 'No such page found' });
+      }
+      return res.status(200).json({
+        message: 'bookmarked post fetched successfully',
+        data: response,
+      });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
