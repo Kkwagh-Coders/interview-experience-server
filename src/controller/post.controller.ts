@@ -134,6 +134,71 @@ const postController = {
 
     return res.status(200).json({ message: 'Post Deleted Successfully' });
   },
+  addUserBookmark: async (
+    req: TypeRequestBody<{
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { authTokenData } = req.body;
+    const userId = authTokenData.id.toString();
+
+    const postId = req.params['id'];
+    if (!Types.ObjectId.isValid(postId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Post to Bookmark' });
+    }
+
+    try {
+      const updateDetail = await postServices.addUserToBookmark(postId, userId);
+
+      // Check if user was already bookmarked
+      if (updateDetail.matchedCount === 0) {
+        return res.status(500).json({ message: 'Post is already Bookmarked' });
+      }
+
+      console.log(updateDetail);
+      return res.status(200).json({ message: 'Post Bookmarked Successfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong...' });
+    }
+  },
+  removeUserBookmark: async (
+    req: TypeRequestBody<{
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { authTokenData } = req.body;
+    const userId = authTokenData.id.toString();
+
+    const postId = req.params['id'];
+    if (!Types.ObjectId.isValid(postId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Post to Remove Bookmark' });
+    }
+
+    try {
+      const updateDetail = await postServices.removeUserFromBookmark(
+        postId,
+        userId,
+      );
+
+      // Check if user was already bookmarked
+      if (updateDetail.matchedCount === 0) {
+        return res.status(500).json({ message: 'Post is not Bookmarked' });
+      }
+
+      console.log(updateDetail);
+      return res.status(200).json({ message: 'Post Removed From Bookmark' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong...' });
+    }
+  },
 };
 
 export default postController;
