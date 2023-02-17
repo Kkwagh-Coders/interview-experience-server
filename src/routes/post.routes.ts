@@ -12,4 +12,10 @@ router.get('/user', isUserAuth, postController.getUserPost);
 router.post('', isUserAuth, postController.createPost);
 router.delete('/:id', isUserAuth, postController.deletePost);
 
+router.post('/upvote/:id', isUserAuth, postController.upVotePost);
+router.post('/downvote/:id', isUserAuth, postController.downVotePost);
+
+router.post('/bookmark/:id', isUserAuth, postController.addUserBookmark);
+router.delete('/bookmark/:id', isUserAuth, postController.removeUserBookmark);
+
 export default router;
