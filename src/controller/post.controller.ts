@@ -134,6 +134,72 @@ const postController = {
 
     return res.status(200).json({ message: 'Post Deleted Successfully' });
   },
+  upVotePost: async (
+    req: TypeRequestBody<{
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { authTokenData } = req.body;
+    const userId = authTokenData.id.toString();
+
+    const postId = req.params['id'];
+    if (!Types.ObjectId.isValid(postId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Post to Up-Vote' });
+    }
+
+    try {
+      const updateDetail = await postServices.upVotePost(postId, userId);
+
+      // Check if user was already bookmarked
+      if (updateDetail.matchedCount === 0) {
+        await postServices.nullifyUserVote(postId, userId);
+        return res
+          .status(200)
+          .json({ message: 'Removed Up Vote Successfully' });
+      }
+
+      return res.status(200).json({ message: 'Post Up Voted Successfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong...' });
+    }
+  },
+  downVotePost: async (
+    req: TypeRequestBody<{
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { authTokenData } = req.body;
+    const userId = authTokenData.id.toString();
+
+    const postId = req.params['id'];
+    if (!Types.ObjectId.isValid(postId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Post to Down-Vote' });
+    }
+
+    try {
+      const updateDetail = await postServices.downVotePost(postId, userId);
+
+      // Check if user was already bookmarked
+      if (updateDetail.matchedCount === 0) {
+        await postServices.nullifyUserVote(postId, userId);
+        return res
+          .status(200)
+          .json({ message: 'Removed Down Vote Successfully' });
+      }
+
+      return res.status(200).json({ message: 'Post Down Voted Successfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong...' });
+    }
+  },
   addUserBookmark: async (
     req: TypeRequestBody<{
       authTokenData: IAuthToken;
@@ -158,7 +224,6 @@ const postController = {
         return res.status(500).json({ message: 'Post is already Bookmarked' });
       }
 
-      console.log(updateDetail);
       return res.status(200).json({ message: 'Post Bookmarked Successfully' });
     } catch (error) {
       console.log(error);
@@ -192,7 +257,6 @@ const postController = {
         return res.status(500).json({ message: 'Post is not Bookmarked' });
       }
 
-      console.log(updateDetail);
       return res.status(200).json({ message: 'Post Removed From Bookmark' });
     } catch (error) {
       console.log(error);
