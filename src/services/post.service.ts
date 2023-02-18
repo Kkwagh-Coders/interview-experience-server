@@ -1,7 +1,7 @@
 import postModel from '../models/post.model';
-import { IPostForm } from '../types/post.types';
-import { IPostDisplay } from '../types/post.types';
+import { IPostForm, IPostDisplay, IPostList } from '../types/post.types';
 import { Types } from 'mongoose';
+
 const postServices = {
   createPost: (post: IPostForm) => {
     return postModel.create(post);
@@ -18,14 +18,24 @@ const postServices = {
       .populate<IPostDisplay>('userId', 'username');
   },
   getUserBookmarkedPost: (
-    auserId: Types.ObjectId,
+    userId: Types.ObjectId,
     limit: number,
     skip: number,
   ) => {
     return postModel
-      .find({ bookmarks: { $in: [auserId] } })
+      .find({ bookmarks: { $in: [userId] } })
+      .select({
+        comments: 0,
+        tags: 0,
+        rating: 0,
+        bookmarks: 0,
+        views: 0,
+        status: 0,
+      })
+      .populate<IPostList>('userId', 'username')
       .limit(limit)
-      .skip(skip);
+      .skip(skip)
+      .lean();
   },
 };
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { DeleteResult } from 'mongodb';
-import { IPostForm } from '../types/post.types';
+import { DeleteResult, ObjectId } from 'mongodb';
+import { IPostList, IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
 import postServices from '../services/post.service';
@@ -12,7 +12,7 @@ const postController = {
     return res.status(200).json({ message: 'in get Post' });
   },
 
-  getDisplayPost: async (
+  getPost: async (
     req: TypeRequestBody<{ authTokenData: IAuthToken }>,
     res: Response,
   ) => {
@@ -30,6 +30,7 @@ const postController = {
       }
       const postAuthor = post.userId.username;
       const postAuthorId = post.userId._id;
+
       // get the userid
       const userId = req.body.authTokenData.id;
 
@@ -77,38 +78,62 @@ const postController = {
   ) => {
     const userId = req.body.authTokenData.id;
 
-    // queryPage should start from 1
-    const queryPage = req.query['page'];
+    // queryPage should start from 0
+    const page: number = parseInt(req.query['page'] as string);
+    let limit: number = parseInt(req.query['limit'] as string);
 
-    // if page no is invalid;
-    if (queryPage === undefined || queryPage === '') {
+    if (!limit || limit > 20) {
+      limit = 5;
+    }
+
+    if (!page && page != 0) {
       return res.status(404).json({ message: 'No such page found' });
     }
 
-    //converting string to number
-    // for limit it is decremented by 1
-    const pageNo = +queryPage - 1;
-
-    console.log(pageNo);
-    if (Number.isNaN(pageNo) || pageNo < 0) {
-      return res.status(404).json({ message: 'No such page found' });
-    }
-
-    const LIMIT = 1;
-    const skip = LIMIT * pageNo;
-
+    const skip = limit * page;
     try {
       const response = await postServices.getUserBookmarkedPost(
         userId,
-        LIMIT,
+        limit,
         skip,
       );
       if (response.length === 0) {
-        return res.status(404).json({ message: 'No such page found' });
+        return res
+          .status(200)
+          .json({ message: 'No posts to display', data: [] });
       }
+
+      // check whether user has upvoted or downvoted the post
+      for (const i in response) {
+        response[i].isUpvoted = false;
+        response[i].isdownVoted = false;
+        for (const index in response[i].upVotes) {
+          if (userId == response[i].upVotes[index]) {
+            response[i].isUpvoted = true;
+            response[i].isdownVoted = false;
+            break;
+          }
+        }
+        if (response[i].isUpvoted === false) {
+          for (const index in response[i].downVotes) {
+            if (userId == response[i].downVotes[index]) {
+              response[i].isUpvoted = false;
+              response[i].isdownVoted = true;
+              break;
+            }
+          }
+        }
+
+        response[i].upVotes = [];
+        response[i].downVotes = [];
+      }
+
+      const nextPage = page + 1;
+      const previousPage = page === 0 ? undefined : page - 1;
       return res.status(200).json({
-        message: 'bookmarked post fetched successfully',
+        message: 'bookmarked posts fetched successfully',
         data: response,
+        page: { nextPage, previousPage },
       });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });

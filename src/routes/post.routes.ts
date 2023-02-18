@@ -6,7 +6,7 @@ const router = Router();
 
 // TODO : finalize endpoints
 router.get('', postController.getAllPost);
-router.get('/:id', isUserAuth, postController.getDisplayPost);
+router.get('/:id', isUserAuth, postController.getPost);
 router.get(
   '/bookmarked/user',
   isUserAuth,
@@ -20,4 +20,5 @@ router.post('/:id/bookmark', postController.getUserBookmarkedPost);
 router.post('/:id/removebookmark', postController.getUserBookmarkedPost);
 router.post('/:id/upvote', postController.getUserBookmarkedPost);
 router.post('/:id/downvote', postController.getUserBookmarkedPost);
+
 export default router;
