@@ -79,10 +79,8 @@ export interface IPostList {
 }
 
 export interface IPostFilter {
-  createAt?: number;
   role?: string;
   postType?: string;
   company?: string;
   rating?: number;
-  top?: number;
 }

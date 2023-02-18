@@ -42,9 +42,19 @@ const postServices = {
       .skip(skip)
       .lean();
   },
-  getAllPosta: (filter: any) => {
-    console.log(filter);
-    return postModel.find(filter).sort({ createdAt: -1 });
+  getAllPosts: (filter: IPostFilter, sort: any) => {
+    console.log(sort);
+    return postModel
+      .find(filter)
+      .sort(sort)
+      .select({
+        comments: 0,
+        status: 0,
+        tags: 0,
+      })
+      .populate<IPostList>('userId', 'username')
+      .lean();
+    // .sort({ createdAt: '' });
   },
 };
 

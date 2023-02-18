@@ -8,25 +8,36 @@ import { IPostFilter, IPostForm } from '../types/post.types';
 
 const postController = {
   // TODO: finalize function names
-  getAllPost: async (req: Request, res: Response) => {
+  getAllPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
     const { sortBy, articleType, jobRole, company, rating, page, limit } =
       req.query;
+    console.log('point1');
+    const userId = req.body.authTokenData.id;
+    console.log('point1');
     const filters: IPostFilter = {};
 
-    // for every page newest post first is the default sorting
-    // const sort: { createdAt?: number } = {
-    //   createdAt: undefined,
-    //   top: -1,
-    // };
+    // definining sort
+    const sort: { createdAt?: string; voteCount?: string } = {
+      // for every page newest post first is the default sorting except when topVoted posst is required
+      createdAt: 'desc',
+    };
 
-    // TODO: implement default sorting
-    // if (sortBy) {
-    //   if (sortBy === 'new') sort.createdAt = -1;
-    //   else if (sortBy === 'old') filters.createAt = 1;
-    //   else if (sortBy === 'top') sort.top = undefined;
-    // }
+    console.log('point1');
+    if (sortBy) {
+      if (sortBy === 'new') sort.createdAt = 'desc';
+      else if (sortBy === 'old') sort.createdAt = 'asc';
+      else if (sortBy === 'top') {
+        sort.voteCount = 'desc';
+        sort.createdAt = undefined;
+      }
+    }
+    console.log('point2');
 
-    // if articleType is not in query
+    // check and find all the filter parameters
+    // if articleType is in query
     if (articleType) {
       filters.postType = articleType as string;
     }
@@ -38,9 +49,43 @@ const postController = {
     }
     const convertedRating = parseInt(rating as string);
     if (convertedRating) filters.rating = convertedRating;
-
     try {
-      const response = await postServices.getAllPosta(filters);
+      const response = await postServices.getAllPosts(filters, sort);
+
+      // check if the post is upvoted or downvoted
+      for (const i in response) {
+        response[i].isUpvoted = false;
+        response[i].isdownVoted = false;
+        for (const index in response[i].upVotes) {
+          if (userId == response[i].upVotes[index]) {
+            response[i].isUpvoted = true;
+            response[i].isdownVoted = false;
+            break;
+          }
+        }
+        if (response[i].isUpvoted === false) {
+          for (const index in response[i].downVotes) {
+            if (userId == response[i].downVotes[index]) {
+              response[i].isUpvoted = false;
+              response[i].isdownVoted = true;
+              break;
+            }
+          }
+        }
+
+        // check if the post is bookmarked or not
+        response[i].isBookmarked = false;
+        for (const index in response[i].bookmarks) {
+          if (userId == response[i].bookmarks[index]) {
+            response[i].isBookmarked = true;
+            break;
+          }
+        }
+
+        response[i].upVotes = [];
+        response[i].downVotes = [];
+      }
+
       return res
         .status(200)
         .json({ message: 'in get Post', response, filters });
