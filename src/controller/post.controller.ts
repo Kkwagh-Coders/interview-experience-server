@@ -1,15 +1,52 @@
 import { Request, Response } from 'express';
-import { DeleteResult, ObjectId } from 'mongodb';
-import { IPostList, IPostForm } from '../types/post.types';
+import { DeleteResult } from 'mongodb';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
 import postServices from '../services/post.service';
-import mongoose, { mongo, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { IPostFilter, IPostForm } from '../types/post.types';
 
 const postController = {
   // TODO: finalize function names
   getAllPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get Post' });
+    const { sortBy, articleType, jobRole, company, rating, page, limit } =
+      req.query;
+    const filters: IPostFilter = {};
+
+    // for every page newest post first is the default sorting
+    // const sort: { createdAt?: number } = {
+    //   createdAt: undefined,
+    //   top: -1,
+    // };
+
+    // TODO: implement default sorting
+    // if (sortBy) {
+    //   if (sortBy === 'new') sort.createdAt = -1;
+    //   else if (sortBy === 'old') filters.createAt = 1;
+    //   else if (sortBy === 'top') sort.top = undefined;
+    // }
+
+    // if articleType is not in query
+    if (articleType) {
+      filters.postType = articleType as string;
+    }
+    if (jobRole) {
+      filters.role = jobRole as string;
+    }
+    if (company) {
+      filters.company = company as string;
+    }
+    const convertedRating = parseInt(rating as string);
+    if (convertedRating) filters.rating = convertedRating;
+
+    try {
+      const response = await postServices.getAllPosta(filters);
+      return res
+        .status(200)
+        .json({ message: 'in get Post', response, filters });
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
 
   getPost: async (
@@ -172,7 +209,7 @@ const postController = {
       authTokenData,
     } = req.body;
 
-    // Check if user hahs passed all values
+    // Check if user has passed all values
     if (
       !title ||
       !content ||
@@ -248,7 +285,7 @@ const postController = {
       return res.status(500).json({ message: 'Something went wrong...' });
     }
 
-    // Check the conditions if the post is successfully deleted or not
+    // Check the condition if the post is successfully deleted or not
     if (!postDeleteResponse.acknowledged) {
       return res.status(400).json({ message: 'Something went wrong...' });
     }
@@ -262,3 +299,14 @@ const postController = {
 };
 
 export default postController;
+
+// if (company && isNaN(company as number) )
+//     if (articleType) {
+
+//     }
+
+//     if (jobRole) {
+//     }
+
+//     if (company) {
+//     }

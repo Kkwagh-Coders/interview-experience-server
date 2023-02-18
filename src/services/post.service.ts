@@ -1,5 +1,10 @@
 import postModel from '../models/post.model';
-import { IPostForm, IPostDisplay, IPostList } from '../types/post.types';
+import {
+  IPostForm,
+  IPostDisplay,
+  IPostList,
+  IPostFilter,
+} from '../types/post.types';
 import { Types } from 'mongoose';
 
 const postServices = {
@@ -36,6 +41,10 @@ const postServices = {
       .limit(limit)
       .skip(skip)
       .lean();
+  },
+  getAllPosta: (filter: any) => {
+    console.log(filter);
+    return postModel.find(filter).sort({ createdAt: -1 });
   },
 };
 

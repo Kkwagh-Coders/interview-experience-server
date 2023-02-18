@@ -77,3 +77,12 @@ export interface IPostList {
   isdownVoted: boolean;
   isBookmarked: boolean;
 }
+
+export interface IPostFilter {
+  createAt?: number;
+  role?: string;
+  postType?: string;
+  company?: string;
+  rating?: number;
+  top?: number;
+}
