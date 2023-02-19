@@ -14,26 +14,18 @@ const postController = {
   ) => {
     const { sortBy, articleType, jobRole, company, rating, page, limit } =
       req.query;
-    const userId = req.body.userId;
-    console.log(userId);
+
     const filters: IPostFilter = {};
 
-    // definining sort
-    const sort: { createdAt?: string; voteCount?: string } = {
-      // for every page newest post first is the default sorting except when topVoted post is required
-      createdAt: 'desc',
-    };
+    //default sorting is by newest post first
+    let sort = '-createdAt';
 
-    console.log('point1');
     if (sortBy) {
-      if (sortBy === 'new') sort.createdAt = 'desc';
-      else if (sortBy === 'old') sort.createdAt = 'asc';
-      else if (sortBy === 'top') {
-        sort.voteCount = 'desc';
-        sort.createdAt = undefined;
-      }
+      if (sortBy === 'new') sort = '-createdAt';
+      else if (sortBy === 'old') sort = 'createdAt';
+      else if (sortBy == 'views') sort = '-views';
+      // else if (sortBy === 'top') sort.voteCount = 'desc';
     }
-    console.log('point2');
 
     // check and find all the filter parameters
     // if articleType is in query
@@ -48,46 +40,51 @@ const postController = {
     }
     const convertedRating = parseInt(rating as string);
     if (convertedRating) filters.rating = convertedRating;
+
     try {
       const response = await postServices.getAllPosts(filters, sort);
 
-      // check if the post is upvoted or downvoted
-      for (const i in response) {
-        response[i].isUpvoted = false;
-        response[i].isdownVoted = false;
-        for (const index in response[i].upVotes) {
-          if (userId == response[i].upVotes[index]) {
-            response[i].isUpvoted = true;
-            response[i].isdownVoted = false;
-            break;
-          }
-        }
-        if (response[i].isUpvoted === false) {
-          for (const index in response[i].downVotes) {
-            if (userId == response[i].downVotes[index]) {
-              response[i].isUpvoted = false;
-              response[i].isdownVoted = true;
+      const userId = req.body.userId;
+
+      if (userId) {
+        for (const i in response) {
+          // check if the post is upvoted or downvoted
+          response[i].isUpvoted = false;
+          response[i].isdownVoted = false;
+          for (const index in response[i].upVotes) {
+            if (userId == response[i].upVotes[index]) {
+              response[i].isUpvoted = true;
+              response[i].isdownVoted = false;
               break;
             }
           }
-        }
-
-        // check if the post is bookmarked or not
-        response[i].isBookmarked = false;
-        for (const index in response[i].bookmarks) {
-          if (userId == response[i].bookmarks[index]) {
-            response[i].isBookmarked = true;
-            break;
+          if (response[i].isUpvoted === false) {
+            for (const index in response[i].downVotes) {
+              if (userId == response[i].downVotes[index]) {
+                response[i].isUpvoted = false;
+                response[i].isdownVoted = true;
+                break;
+              }
+            }
           }
-        }
 
-        response[i].upVotes = [];
-        response[i].downVotes = [];
+          // check if the post is bookmarked or not
+          response[i].isBookmarked = false;
+          for (const index in response[i].bookmarks) {
+            if (userId == response[i].bookmarks[index]) {
+              response[i].isBookmarked = true;
+              break;
+            }
+          }
+
+          // empty the array as there is no need of these at frontend
+          response[i].upVotes = [];
+          response[i].downVotes = [];
+          response[i].bookmarks = [];
+        }
       }
 
-      return res
-        .status(200)
-        .json({ message: 'in get Post', response, filters });
+      return res.status(200).json({ message: 'in get Post', response });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }

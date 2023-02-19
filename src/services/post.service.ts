@@ -4,6 +4,7 @@ import {
   IPostDisplay,
   IPostList,
   IPostFilter,
+  // IPostSort,
 } from '../types/post.types';
 import { Types } from 'mongoose';
 
@@ -42,8 +43,7 @@ const postServices = {
       .skip(skip)
       .lean();
   },
-  getAllPosts: (filter: IPostFilter, sort: any) => {
-    console.log(sort);
+  getAllPosts: (filter: IPostFilter, sort: string) => {
     return postModel
       .find(filter)
       .sort(sort)
@@ -54,7 +54,6 @@ const postServices = {
       })
       .populate<IPostList>('userId', 'username')
       .lean();
-    // .sort({ createdAt: '' });
   },
 };
 
