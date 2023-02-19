@@ -42,47 +42,25 @@ const postController = {
     if (convertedRating) filters.rating = convertedRating;
 
     try {
-      const response = await postServices.getAllPosts(filters, sort);
-
       const userId = req.body.userId;
+      const posts = await postServices.getAllPosts(filters, sort);
 
-      if (userId) {
-        for (const i in response) {
-          // check if the post is upvoted or downvoted
-          response[i].isUpvoted = false;
-          response[i].isdownVoted = false;
-          for (const index in response[i].upVotes) {
-            if (userId == response[i].upVotes[index]) {
-              response[i].isUpvoted = true;
-              response[i].isdownVoted = false;
-              break;
-            }
-          }
-          if (response[i].isUpvoted === false) {
-            for (const index in response[i].downVotes) {
-              if (userId == response[i].downVotes[index]) {
-                response[i].isUpvoted = false;
-                response[i].isdownVoted = true;
-                break;
-              }
-            }
-          }
+      const response = posts.map((post) => {
+        const { upVotes, downVotes, bookmarks } = post;
+        const isUpvoted = upVotes.some((id) => userId === id);
+        const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
+        const isBookmarked = bookmarks.some((id) => userId === id);
 
-          // check if the post is bookmarked or not
-          response[i].isBookmarked = false;
-          for (const index in response[i].bookmarks) {
-            if (userId == response[i].bookmarks[index]) {
-              response[i].isBookmarked = true;
-              break;
-            }
-          }
-
-          // empty the array as there is no need of these at frontend
-          response[i].upVotes = [];
-          response[i].downVotes = [];
-          response[i].bookmarks = [];
-        }
-      }
+        return {
+          ...post,
+          isUpvoted,
+          isDownvoted,
+          isBookmarked,
+          upVotes: undefined,
+          downVotes: undefined,
+          bookmarks: undefined,
+        };
+      });
 
       return res.status(200).json({ message: 'in get Post', response });
     } catch (error) {
@@ -156,58 +134,55 @@ const postController = {
   ) => {
     const userId = req.body.authTokenData.id;
 
-    // queryPage should start from 0
-    const page: number = parseInt(req.query['page'] as string);
-    let limit: number = parseInt(req.query['limit'] as string);
+    // queryPage should start from 1
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
 
-    if (!limit || limit > 20) {
-      limit = 5;
+    // default limit
+    if (!limit) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'Limit cannot exceed 100' });
     }
 
-    if (!page && page != 0) {
-      return res.status(404).json({ message: 'No such page found' });
+    // default page
+    if (!page || page < 0) {
+      page = 0;
     }
 
     const skip = limit * page;
     try {
-      const response = await postServices.getUserBookmarkedPost(
+      const posts = await postServices.getUserBookmarkedPost(
         userId,
         limit,
         skip,
       );
-      if (response.length === 0) {
+      if (posts.length === 0) {
         return res
           .status(200)
           .json({ message: 'No posts to display', data: [] });
       }
 
-      // check whether user has upvoted or downvoted the post
-      for (const i in response) {
-        response[i].isUpvoted = false;
-        response[i].isdownVoted = false;
-        for (const index in response[i].upVotes) {
-          if (userId == response[i].upVotes[index]) {
-            response[i].isUpvoted = true;
-            response[i].isdownVoted = false;
-            break;
-          }
-        }
-        if (response[i].isUpvoted === false) {
-          for (const index in response[i].downVotes) {
-            if (userId == response[i].downVotes[index]) {
-              response[i].isUpvoted = false;
-              response[i].isdownVoted = true;
-              break;
-            }
-          }
-        }
+      const response = posts.map((post) => {
+        const { upVotes, downVotes } = post;
+        const isUpvoted = upVotes.some((id) => userId === id);
+        const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
+        const isBookmarked = true;
 
-        response[i].upVotes = [];
-        response[i].downVotes = [];
-      }
+        return {
+          ...post,
+          isUpvoted,
+          isDownvoted,
+          isBookmarked,
+          upVotes: undefined,
+          downVotes: undefined,
+        };
+      });
 
-      const nextPage = page + 1;
-      const previousPage = page === 0 ? undefined : page - 1;
+      // as frontend is 1 based page index
+      const nextPage = page + 2;
+      // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
+      const previousPage = page === 0 ? undefined : page;
       return res.status(200).json({
         message: 'bookmarked posts fetched successfully',
         data: response,
