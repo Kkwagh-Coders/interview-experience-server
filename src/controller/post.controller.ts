@@ -9,19 +9,18 @@ import { IPostFilter, IPostForm } from '../types/post.types';
 const postController = {
   // TODO: finalize function names
   getAllPost: async (
-    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    req: TypeRequestBody<{ userId: Types.ObjectId | null }>,
     res: Response,
   ) => {
     const { sortBy, articleType, jobRole, company, rating, page, limit } =
       req.query;
-    console.log('point1');
-    const userId = req.body.authTokenData.id;
-    console.log('point1');
+    const userId = req.body.userId;
+    console.log(userId);
     const filters: IPostFilter = {};
 
     // definining sort
     const sort: { createdAt?: string; voteCount?: string } = {
-      // for every page newest post first is the default sorting except when topVoted posst is required
+      // for every page newest post first is the default sorting except when topVoted post is required
       createdAt: 'desc',
     };
 
