@@ -12,7 +12,7 @@ router.get(
   isUserAuth,
   postController.getUserBookmarkedPost,
 );
-router.get('/user', isUserAuth, postController.getUserPost);
+router.get('/user/all', isUserAuth, postController.getUserPost);
 router.post('', isUserAuth, postController.createPost);
 router.delete('/:id', isUserAuth, postController.deletePost);
 

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { DeleteResult } from 'mongodb';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
@@ -63,14 +63,14 @@ const postController = {
 
       const response = posts.map((post) => {
         const { content, upVotes, downVotes, bookmarks } = post;
-        const textConent = generateTextFromHTML(content);
+        const textContent = generateTextFromHTML(content);
         const isUpvoted = upVotes.some((id) => userId === id);
         const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
         const isBookmarked = bookmarks.some((id) => userId === id);
 
         return {
           ...post,
-          content: textConent,
+          content: textContent,
           isUpvoted,
           isDownvoted,
           isBookmarked,
@@ -188,9 +188,11 @@ const postController = {
         const isUpvoted = upVotes.some((id) => userId === id);
         const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
         const isBookmarked = true;
+        const textContent = generateTextFromHTML(post.content);
 
         return {
           ...post,
+          content: textContent,
           isUpvoted,
           isDownvoted,
           isBookmarked,
@@ -213,9 +215,55 @@ const postController = {
     }
   },
 
-  getUserPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get user Post' });
+  getUserPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    // query page will start from 1;
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
+
+    // default limit
+    if (!limit) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'limit cannot exceed 100' });
+    }
+
+    if (!page || page < 0) {
+      page = 0;
+    }
+
+    const skip = limit * page;
+    const userId = req.body.authTokenData.id;
+    try {
+      const posts = await postServices.getUserPosts(userId, limit, skip);
+
+      const response = posts.map((post) => {
+        const { upVotes, downVotes, bookmarks } = post;
+        const isUpvoted = upVotes.some((id) => id == userId);
+        const isDownvoted = !isUpvoted && downVotes.some((id) => id == userId);
+        const isBookmarked = bookmarks.some((id) => id == userId);
+        const textContent = generateTextFromHTML(post.content);
+
+        return {
+          ...post,
+          content: textContent,
+          isUpvoted,
+          isDownvoted,
+          isBookmarked,
+          upVotes: undefined,
+          downVotes: undefined,
+          bookmarks: undefined,
+        };
+      });
+      return res.status(200).json({ message: 'user posts', data: response });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong....' });
+    }
   },
+
   createPost: async (
     req: TypeRequestBody<{
       title?: string;
@@ -285,8 +333,6 @@ const postController = {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
-
-    // TODO: save the post in the user model in the userPost section
   },
   deletePost: async (
     req: TypeRequestBody<{
@@ -335,14 +381,3 @@ const postController = {
 };
 
 export default postController;
-
-// if (company && isNaN(company as number) )
-//     if (articleType) {
-
-//     }
-
-//     if (jobRole) {
-//     }
-
-//     if (company) {
-//     }

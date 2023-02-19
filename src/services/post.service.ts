@@ -33,7 +33,7 @@ const postServices = {
       .select({
         comments: 0,
         tags: 0,
-        rating: 0,
+        // rating: 0,
         bookmarks: 0,
         views: 0,
         status: 0,
@@ -57,6 +57,16 @@ const postServices = {
         status: 0,
         tags: 0,
       })
+      .populate<IPostList>('userId', 'username')
+      .limit(limit)
+      .skip(skip)
+      .lean();
+  },
+
+  getUserPosts: (userId: Types.ObjectId, limit: number, skip: number) => {
+    return postModel
+      .find({ userId })
+      .select({ comments: 0, tags: 0 })
       .populate<IPostList>('userId', 'username')
       .limit(limit)
       .skip(skip)
