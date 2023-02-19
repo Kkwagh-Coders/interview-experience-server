@@ -1,25 +1,269 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { DeleteResult } from 'mongodb';
-import { Types } from 'mongoose';
-import postServices from '../services/post.service';
-import { IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
+import postServices from '../services/post.service';
+import mongoose, { Types } from 'mongoose';
+import { IPostFilter, IPostForm } from '../types/post.types';
+import generateTextFromHTML from '../utils/generateTextFromHTML';
 
 const postController = {
   // TODO: finalize function names
-  getAllPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get Post' });
+  getAllPost: async (
+    req: TypeRequestBody<{ userId: Types.ObjectId | null }>,
+    res: Response,
+  ) => {
+    const { sortBy, articleType, jobRole, company, rating } = req.query;
+
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
+
+    // default limit
+    if (!limit) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+    }
+
+    // default page
+    if (!page || page < 0) {
+      page = 0;
+    }
+
+    const skip = limit * page;
+    const filters: IPostFilter = {};
+
+    //default sorting is by newest post first
+    let sort = '-createdAt';
+
+    if (sortBy) {
+      if (sortBy === 'new') sort = '-createdAt';
+      else if (sortBy === 'old') sort = 'createdAt';
+      else if (sortBy == 'views') sort = '-views';
+      // else if (sortBy === 'top') sort.voteCount = 'desc';
+    }
+
+    // check and find all the filter parameters
+    // if articleType is in query
+    if (articleType) {
+      filters.postType = articleType as string;
+    }
+    if (jobRole) {
+      filters.role = jobRole as string;
+    }
+    if (company) {
+      filters.company = company as string;
+    }
+    const convertedRating = parseInt(rating as string);
+    if (convertedRating) filters.rating = convertedRating;
+
+    try {
+      const userId = req.body.userId;
+      const posts = await postServices.getAllPosts(filters, sort, limit, skip);
+
+      const response = posts.map((post) => {
+        const { content, upVotes, downVotes, bookmarks } = post;
+        const textContent = generateTextFromHTML(content);
+        const isUpvoted = upVotes.some((id) => userId === id);
+        const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
+        const isBookmarked = bookmarks.some((id) => userId === id);
+
+        return {
+          ...post,
+          content: textContent,
+          isUpvoted,
+          isDownvoted,
+          isBookmarked,
+          upVotes: undefined,
+          downVotes: undefined,
+          bookmarks: undefined,
+        };
+      });
+
+      return res
+        .status(200)
+        .json({ message: 'post fetched successfully', response });
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
-  getDisplayPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get particular Post' });
+
+  getPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    const postId = req.params['id'];
+
+    // check if the id is a valid mongodb id;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(404).json({ message: 'No such Post found' });
+    }
+    try {
+      // increment the value of views by 1 and return the post with populated user data
+      const post = await postServices.getPost(postId);
+      if (!post) {
+        return res.status(404).json({ message: 'No such Post found' });
+      }
+      const postAuthor = post.userId.username;
+      const postAuthorId = post.userId._id;
+
+      // get the userid
+      const userId = req.body.authTokenData.id;
+
+      //check if the user has bookmarked the current post or not?
+      const isBookmarked = post.bookmarks.includes(userId);
+
+      // calculate vote count
+      const voteCount = post.upVotes.length - post.downVotes.length;
+
+      // check whether user has upvoted or downvoted the post
+      const isUpvoted = post.upVotes.includes(userId);
+      const isDownVoted = post.downVotes.includes(userId);
+      const commentCount = post.comments.length;
+
+      return res.status(200).json({
+        message: 'post fetched successfully',
+        post: {
+          title: post.title,
+          content: post.content,
+          comapany: post.company,
+          role: post.role,
+          postType: post.postType,
+          domain: post.domain,
+          rating: post.rating,
+          createdAt: post.createdAt,
+          voteCount,
+          views: post.views,
+          tags: post.tags,
+          postAuthorId,
+          commentCount,
+          isBookmarked,
+          postAuthor,
+          isUpvoted,
+          isDownVoted,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
-  getUserBookmarkedPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get user bookmarked Post' });
+
+  getUserBookmarkedPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    const userId = req.body.authTokenData.id;
+
+    // queryPage should start from 1
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
+
+    // default limit
+    if (!limit) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+    }
+
+    // default page
+    if (!page || page < 0) {
+      page = 0;
+    }
+
+    const skip = limit * page;
+    try {
+      const posts = await postServices.getUserBookmarkedPost(
+        userId,
+        limit,
+        skip,
+      );
+      if (posts.length === 0) {
+        return res
+          .status(200)
+          .json({ message: 'No posts to display', data: [] });
+      }
+
+      const response = posts.map((post) => {
+        const { upVotes, downVotes } = post;
+        const isUpvoted = upVotes.some((id) => userId === id);
+        const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
+        const isBookmarked = true;
+        const textContent = generateTextFromHTML(post.content);
+
+        return {
+          ...post,
+          content: textContent,
+          isUpvoted,
+          isDownvoted,
+          isBookmarked,
+          upVotes: undefined,
+          downVotes: undefined,
+        };
+      });
+
+      // as frontend is 1 based page index
+      const nextPage = page + 2;
+      // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
+      const previousPage = page === 0 ? undefined : page;
+      return res.status(200).json({
+        message: 'bookmarked posts fetched successfully',
+        data: response,
+        page: { nextPage, previousPage },
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
-  getUserPost: async (req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get user Post' });
+
+  getUserPost: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    // query page will start from 1;
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
+
+    // default limit
+    if (!limit) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'limit cannot exceed 100' });
+    }
+
+    if (!page || page < 0) {
+      page = 0;
+    }
+
+    const skip = limit * page;
+    const userId = req.body.authTokenData.id;
+    try {
+      const posts = await postServices.getUserPosts(userId, limit, skip);
+
+      const response = posts.map((post) => {
+        const { upVotes, downVotes, bookmarks } = post;
+        const isUpvoted = upVotes.some((id) => id == userId);
+        const isDownvoted = !isUpvoted && downVotes.some((id) => id == userId);
+        const isBookmarked = bookmarks.some((id) => id == userId);
+        const textContent = generateTextFromHTML(post.content);
+
+        return {
+          ...post,
+          content: textContent,
+          isUpvoted,
+          isDownvoted,
+          isBookmarked,
+          upVotes: undefined,
+          downVotes: undefined,
+          bookmarks: undefined,
+        };
+      });
+      return res.status(200).json({ message: 'user posts', data: response });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong....' });
+    }
   },
+
   createPost: async (
     req: TypeRequestBody<{
       title?: string;
@@ -49,7 +293,7 @@ const postController = {
       authTokenData,
     } = req.body;
 
-    // Check if user hahs passed all values
+    // Check if user has passed all values
     if (
       !title ||
       !content ||
@@ -123,7 +367,7 @@ const postController = {
       return res.status(500).json({ message: 'Something went wrong...' });
     }
 
-    // Check the conditions if the post is successfully deleted or not
+    // Check the condition if the post is successfully deleted or not
     if (!postDeleteResponse.acknowledged) {
       return res.status(400).json({ message: 'Something went wrong...' });
     }
