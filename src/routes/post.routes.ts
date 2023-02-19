@@ -16,9 +16,10 @@ router.get('/user/all', isUserAuth, postController.getUserPost);
 router.post('', isUserAuth, postController.createPost);
 router.delete('/:id', isUserAuth, postController.deletePost);
 
-router.post('/:id/bookmark', postController.getUserBookmarkedPost);
-router.post('/:id/removebookmark', postController.getUserBookmarkedPost);
-router.post('/:id/upvote', postController.getUserBookmarkedPost);
-router.post('/:id/downvote', postController.getUserBookmarkedPost);
+router.post('/upvote/:id', isUserAuth, postController.upVotePost);
+router.post('/downvote/:id', isUserAuth, postController.downVotePost);
+
+router.post('/bookmark/:id', isUserAuth, postController.addUserBookmark);
+router.delete('/bookmark/:id', isUserAuth, postController.removeUserBookmark);
 
 export default router;
