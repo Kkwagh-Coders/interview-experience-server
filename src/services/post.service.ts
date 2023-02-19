@@ -43,7 +43,12 @@ const postServices = {
       .skip(skip)
       .lean();
   },
-  getAllPosts: (filter: IPostFilter, sort: string) => {
+  getAllPosts: (
+    filter: IPostFilter,
+    sort: string,
+    limit: number,
+    skip: number,
+  ) => {
     return postModel
       .find(filter)
       .sort(sort)
@@ -53,6 +58,8 @@ const postServices = {
         tags: 0,
       })
       .populate<IPostList>('userId', 'username')
+      .limit(limit)
+      .skip(skip)
       .lean();
   },
 };

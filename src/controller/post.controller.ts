@@ -5,6 +5,7 @@ import { IAuthToken } from '../types/token.types';
 import postServices from '../services/post.service';
 import mongoose, { Types } from 'mongoose';
 import { IPostFilter, IPostForm } from '../types/post.types';
+import generateTextFromHTML from '../utils/generateTextFromHTML';
 
 const postController = {
   // TODO: finalize function names
@@ -12,9 +13,24 @@ const postController = {
     req: TypeRequestBody<{ userId: Types.ObjectId | null }>,
     res: Response,
   ) => {
-    const { sortBy, articleType, jobRole, company, rating, page, limit } =
-      req.query;
+    const { sortBy, articleType, jobRole, company, rating } = req.query;
 
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
+
+    // default limit
+    if (!limit) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+    }
+
+    // default page
+    if (!page || page < 0) {
+      page = 0;
+    }
+
+    const skip = limit * page;
     const filters: IPostFilter = {};
 
     //default sorting is by newest post first
@@ -43,16 +59,18 @@ const postController = {
 
     try {
       const userId = req.body.userId;
-      const posts = await postServices.getAllPosts(filters, sort);
+      const posts = await postServices.getAllPosts(filters, sort, limit, skip);
 
       const response = posts.map((post) => {
-        const { upVotes, downVotes, bookmarks } = post;
+        const { content, upVotes, downVotes, bookmarks } = post;
+        const textConent = generateTextFromHTML(content);
         const isUpvoted = upVotes.some((id) => userId === id);
         const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
         const isBookmarked = bookmarks.some((id) => userId === id);
 
         return {
           ...post,
+          content: textConent,
           isUpvoted,
           isDownvoted,
           isBookmarked,
@@ -62,7 +80,9 @@ const postController = {
         };
       });
 
-      return res.status(200).json({ message: 'in get Post', response });
+      return res
+        .status(200)
+        .json({ message: 'post fetched successfully', response });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
