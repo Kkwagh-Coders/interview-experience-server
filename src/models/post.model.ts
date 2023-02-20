@@ -35,4 +35,6 @@ const postSchema = new Schema<IPost>({
   comments: [commentSchema],
 });
 
+export const Reply = mongoose.model<IPost>('Reply', replySchema);
+export const Comment = mongoose.model<IPost>('Comment', commentSchema);
 export default mongoose.model<IPost>('Post', postSchema);
