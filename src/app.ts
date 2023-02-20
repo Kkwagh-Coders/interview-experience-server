@@ -23,7 +23,7 @@ app.use(cookieParser());
 // Routes
 app.use('/user', routes.userRoutes);
 app.use('/posts', routes.postRoutes);
-app.use('/comment', routes.commentRoutes);
+app.use('/comments', routes.commentRoutes);
 
 // Home Route
 app.get('/', async (req, res) => {
