@@ -64,15 +64,15 @@ const postController = {
       const response = posts.map((post) => {
         const { content, upVotes, downVotes, bookmarks } = post;
         const textContent = generateTextFromHTML(content);
-        const isUpvoted = upVotes.some((id) => userId === id);
-        const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
+        const isUpVoted = upVotes.some((id) => userId === id);
+        const isDownVoted = !isUpVoted && downVotes.some((id) => userId === id);
         const isBookmarked = bookmarks.some((id) => userId === id);
 
         return {
           ...post,
           content: textContent,
-          isUpvoted,
-          isDownvoted,
+          isUpVoted,
+          isDownVoted,
           isBookmarked,
           upVotes: undefined,
           downVotes: undefined,
@@ -107,7 +107,7 @@ const postController = {
       const postAuthor = post.userId.username;
       const postAuthorId = post.userId._id;
 
-      // get the userid
+      // get the userId
       const userId = req.body.authTokenData.id;
 
       //check if the user has bookmarked the current post or not?
@@ -116,8 +116,8 @@ const postController = {
       // calculate vote count
       const voteCount = post.upVotes.length - post.downVotes.length;
 
-      // check whether user has upvoted or downvoted the post
-      const isUpvoted = post.upVotes.includes(userId);
+      // check whether user has upVoted or downVoted the post
+      const isUpVoted = post.upVotes.includes(userId);
       const isDownVoted = post.downVotes.includes(userId);
       const commentCount = post.comments.length;
 
@@ -126,7 +126,7 @@ const postController = {
         post: {
           title: post.title,
           content: post.content,
-          comapany: post.company,
+          company: post.company,
           role: post.role,
           postType: post.postType,
           domain: post.domain,
@@ -139,7 +139,7 @@ const postController = {
           commentCount,
           isBookmarked,
           postAuthor,
-          isUpvoted,
+          isUpVoted,
           isDownVoted,
         },
       });
@@ -185,16 +185,16 @@ const postController = {
 
       const response = posts.map((post) => {
         const { upVotes, downVotes } = post;
-        const isUpvoted = upVotes.some((id) => userId === id);
-        const isDownvoted = !isUpvoted && downVotes.some((id) => userId === id);
+        const isUpVoted = upVotes.some((id) => userId === id);
+        const isDownVoted = !isUpVoted && downVotes.some((id) => userId === id);
         const isBookmarked = true;
         const textContent = generateTextFromHTML(post.content);
 
         return {
           ...post,
           content: textContent,
-          isUpvoted,
-          isDownvoted,
+          isUpVoted,
+          isDownVoted,
           isBookmarked,
           upVotes: undefined,
           downVotes: undefined,
@@ -241,16 +241,16 @@ const postController = {
 
       const response = posts.map((post) => {
         const { upVotes, downVotes, bookmarks } = post;
-        const isUpvoted = upVotes.some((id) => id == userId);
-        const isDownvoted = !isUpvoted && downVotes.some((id) => id == userId);
+        const isUpVoted = upVotes.some((id) => id == userId);
+        const isDownVoted = !isUpVoted && downVotes.some((id) => id == userId);
         const isBookmarked = bookmarks.some((id) => id == userId);
         const textContent = generateTextFromHTML(post.content);
 
         return {
           ...post,
           content: textContent,
-          isUpvoted,
-          isDownvoted,
+          isUpVoted,
+          isDownVoted,
           isBookmarked,
           upVotes: undefined,
           downVotes: undefined,
