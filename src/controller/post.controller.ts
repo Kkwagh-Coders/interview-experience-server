@@ -19,7 +19,7 @@ const postController = {
     let limit = parseInt(req.query['limit'] as string);
 
     // default limit
-    if (!limit) limit = 10;
+    if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
       return res.status(500).json({ message: 'Limit cannot exceed 100' });
@@ -61,6 +61,12 @@ const postController = {
       const userId = req.body.userId;
       const posts = await postServices.getAllPosts(filters, sort, limit, skip);
 
+      if (posts.length === 0) {
+        return res
+          .status(200)
+          .json({ message: 'No posts to display', data: [] });
+      }
+
       const response = posts.map((post) => {
         const { content, upVotes, downVotes, bookmarks } = post;
         const textContent = generateTextFromHTML(content);
@@ -80,9 +86,15 @@ const postController = {
         };
       });
 
-      return res
-        .status(200)
-        .json({ message: 'post fetched successfully', response });
+      // as frontend is 1 based page index
+      const nextPage = page + 2;
+      // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
+      const previousPage = page === 0 ? undefined : page;
+      return res.status(200).json({
+        message: 'post fetched successfully',
+        data: response,
+        page: { nextPage, previousPage },
+      });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
@@ -159,7 +171,7 @@ const postController = {
     let limit = parseInt(req.query['limit'] as string);
 
     // default limit
-    if (!limit) limit = 10;
+    if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
       return res.status(500).json({ message: 'Limit cannot exceed 100' });
@@ -224,7 +236,7 @@ const postController = {
     let limit = parseInt(req.query['limit'] as string);
 
     // default limit
-    if (!limit) limit = 10;
+    if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
       return res.status(500).json({ message: 'limit cannot exceed 100' });
@@ -238,6 +250,12 @@ const postController = {
     const userId = req.body.authTokenData.id;
     try {
       const posts = await postServices.getUserPosts(userId, limit, skip);
+
+      if (posts.length === 0) {
+        return res
+          .status(200)
+          .json({ message: 'No posts to display', data: [] });
+      }
 
       const response = posts.map((post) => {
         const { upVotes, downVotes, bookmarks } = post;
@@ -257,7 +275,15 @@ const postController = {
           bookmarks: undefined,
         };
       });
-      return res.status(200).json({ message: 'user posts', data: response });
+      // as frontend is 1 based page index
+      const nextPage = page + 2;
+      // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
+      const previousPage = page === 0 ? undefined : page;
+      return res.status(200).json({
+        message: 'user posts',
+        data: response,
+        page: { nextPage, previousPage },
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'something went wrong....' });
