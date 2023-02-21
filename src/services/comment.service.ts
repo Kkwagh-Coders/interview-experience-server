@@ -38,6 +38,33 @@ const commentServices = {
     const update = { $pull: { comments: { _id: commentId } } };
     return postModel.updateOne(conditions, update);
   },
+  deleteReply: async (postId: string, commentId: string, replyId: string) => {
+    const condition = {
+      _id: postId,
+      comments: {
+        $elemMatch: {
+          _id: commentId,
+          replies: { $eleMatch: { _id: replyId } },
+        },
+      },
+    };
+
+    const condition1 = {
+      _id: postId,
+      comments: {
+        $elemMatch: {
+          _id: commentId,
+          'replies._id': replyId,
+        },
+      },
+    };
+    console.log(condition);
+
+    return postModel.find(condition);
+    // const update = {
+    //   $pull: { 'comments.0.replies': { _id: replyId } },
+    // };
+  },
   getComment: (postId: string, limit: number, skip: number) => {
     const selectedFields = {
       _id: 1,

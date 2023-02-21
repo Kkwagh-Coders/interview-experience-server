@@ -150,7 +150,42 @@ const commentController = {
   createCommentReply: async (Req: Request, res: Response) => {
     return res.status(200).json({ message: 'in create nested comment' });
   },
-  deleteCommentReply: async (Req: Request, res: Response) => {
+  deleteCommentReply: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    const userId = req.body.authTokenData.id;
+    const postId = req.params['postid'];
+    const commentId = req.params['commentid'];
+    const replyId = req.params['replyid'];
+
+    console.log(userId, postId, commentId, replyId);
+
+    if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Reply to be deleted....' });
+    }
+
+    try {
+      // id admin is trying to delete simply delete it
+      if (req.body.authTokenData.isAdmin) {
+        const response = await commentServices.deleteReply(
+          postId,
+          commentId,
+          replyId,
+        );
+
+        return res
+          .status(200)
+          .json({ message: 'Data fetched successfully...', data: response });
+      } else {
+        // some work
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong...' });
+    }
     return res.status(200).json({ message: 'in create nested comment' });
   },
 };
