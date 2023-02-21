@@ -159,34 +159,47 @@ const commentController = {
     const commentId = req.params['commentid'];
     const replyId = req.params['replyid'];
 
-    console.log(userId, postId, commentId, replyId);
-
-    if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
+    if (
+      !Types.ObjectId.isValid(postId) ||
+      !Types.ObjectId.isValid(commentId) ||
+      !Types.ObjectId.isValid(replyId)
+    ) {
       return res
         .status(404)
         .json({ message: 'Please provide a valid Reply to be deleted....' });
     }
 
     try {
-      // id admin is trying to delete simply delete it
+      // if admin is trying to delete
+      let response: UpdateResult | null = null;
       if (req.body.authTokenData.isAdmin) {
-        const response = await commentServices.deleteReply(
+        response = await commentServices.deleteReply(
           postId,
           commentId,
           replyId,
         );
-
-        return res
-          .status(200)
-          .json({ message: 'Data fetched successfully...', data: response });
       } else {
-        // some work
+        response = await commentServices.deleteReplyUsingAuthorId(
+          postId,
+          commentId,
+          replyId,
+          userId,
+        );
       }
+
+      if (!response.acknowledged) {
+        return res.status(500).json({ message: 'something went wrong.....' });
+      }
+
+      if (!response.modifiedCount) {
+        return res.status(404).json({ message: 'no such reply found' });
+      }
+
+      return res.status(200).json({ message: 'Reply deleted successfully' });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong...' });
     }
-    return res.status(200).json({ message: 'in create nested comment' });
   },
 };
 
