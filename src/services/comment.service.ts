@@ -1,4 +1,5 @@
 import postModel, { Comment } from '../models/post.model';
+import { ICommentDisplay } from '../types/comment.types';
 
 const commentServices = {
   createComment: async (userId: string, postId: string, content: string) => {
@@ -36,6 +37,21 @@ const commentServices = {
 
     const update = { $pull: { comments: { _id: commentId } } };
     return postModel.updateOne(conditions, update);
+  },
+  getComment: (postId: string, limit: number, skip: number) => {
+    const selectedFields = {
+      _id: 1,
+      comments: { $slice: [skip, limit] },
+    };
+
+    return postModel
+      .findById(postId)
+      .select(selectedFields)
+      .populate<ICommentDisplay>({
+        path: 'comments',
+        populate: { path: 'userId', select: 'username' },
+      })
+      .sort({ $natural: 1 });
   },
 };
 

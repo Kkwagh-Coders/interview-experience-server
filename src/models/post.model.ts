@@ -4,13 +4,13 @@ import { IComment } from '../types/comment.types';
 import { IReply } from '../types/reply.types';
 
 const replySchema = new Schema<IReply>({
-  userId: { type: Schema.Types.ObjectId, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now() },
 });
 
 const commentSchema = new Schema<IComment>({
-  userId: { type: Schema.Types.ObjectId, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now() },
   replies: [replySchema],
@@ -19,7 +19,7 @@ const commentSchema = new Schema<IComment>({
 const postSchema = new Schema<IPost>({
   title: { type: String, required: true },
   content: { type: String, required: true },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   company: { type: String, required: true },
   role: { type: String, required: true },
   postType: { type: String, required: true },
