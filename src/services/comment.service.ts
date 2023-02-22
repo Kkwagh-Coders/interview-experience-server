@@ -1,4 +1,4 @@
-import postModel, { Comment } from '../models/post.model';
+import postModel, { Comment, Reply } from '../models/post.model';
 import { ICommentDisplay } from '../types/comment.types';
 
 const commentServices = {
@@ -70,6 +70,28 @@ const commentServices = {
     return post?.comments
       ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(skip, skip + limit);
+  },
+  createReply: async (
+    userId: string,
+    postId: string,
+    commentId: string,
+    content: string,
+  ) => {
+    const reply = new Reply({ userId, content });
+
+    // Define the condition and new value
+    const conditions = {
+      _id: postId,
+      comments: { $elemMatch: { _id: commentId } },
+    };
+
+    const update = { $push: { 'comments.$.replies': reply } };
+
+    const post = await postModel.findOneAndUpdate(conditions, update);
+
+    // Check if post is updated or not, if updated return the comment id
+    if (!post) return null;
+    return reply._id;
   },
 };
 

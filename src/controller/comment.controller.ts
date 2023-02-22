@@ -145,8 +145,52 @@ const commentController = {
   getCommentReplies: async (Req: Request, res: Response) => {
     return res.status(200).json({ message: 'in get nested Comment' });
   },
-  createCommentReply: async (Req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in create nested comment' });
+  createCommentReply: async (
+    req: TypeRequestBody<{
+      content?: string;
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { content, authTokenData } = req.body;
+    const userId = authTokenData.id.toString();
+
+    const postId = req.params['postid'];
+    const commentId = req.params['commentid'];
+    if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Post with Comment to reply' });
+    }
+
+    if (!content) {
+      return res
+        .status(401)
+        .json({ message: 'Reply is Empty, please provide content' });
+    }
+
+    try {
+      const replyId = await commentServices.createReply(
+        userId,
+        postId,
+        commentId,
+        content,
+      );
+
+      if (!replyId) {
+        return res
+          .status(404)
+          .json({ message: 'Please provide a valid Comment to Reply' });
+      }
+
+      return res.status(200).json({
+        message: 'Replied to the Comment Successfully',
+        replyId: replyId,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
   deleteCommentReply: async (Req: Request, res: Response) => {
     return res.status(200).json({ message: 'in create nested comment' });
