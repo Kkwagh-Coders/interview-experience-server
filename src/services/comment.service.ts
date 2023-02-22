@@ -38,20 +38,38 @@ const commentServices = {
     const update = { $pull: { comments: { _id: commentId } } };
     return postModel.updateOne(conditions, update);
   },
-  getComment: (postId: string, limit: number, skip: number) => {
+  getComment: async (postId: string, skip: number, limit: number) => {
     const selectedFields = {
-      _id: 1,
-      comments: { $slice: [skip, limit] },
+      title: 0,
+      content: 0,
+      userId: 0,
+      company: 0,
+      role: 0,
+      postType: 0,
+      domain: 0,
+      rating: 0,
+      status: 0,
+      createdAt: 0,
+      upVotes: 0,
+      downVotes: 0,
+      views: 0,
+      bookmarks: 0,
+      tags: 0,
+      'comments.replies': 0,
     };
 
-    return postModel
+    const post = await postModel
       .findById(postId)
       .select(selectedFields)
-      .populate<ICommentDisplay>({
+      .populate({
         path: 'comments',
         populate: { path: 'userId', select: 'username' },
-      })
-      .sort({ $natural: 1 });
+        options: { sort: { createdAt: -1 } },
+      });
+
+    return post?.comments
+      ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(skip, skip + limit);
   },
 };
 

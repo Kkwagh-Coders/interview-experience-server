@@ -32,11 +32,9 @@ const commentController = {
     const skip = limit * page;
 
     try {
-      const response = await commentServices.getComment(postId, limit, skip);
-      if (!response) {
-        return res.status(200).json({ message: 'No such Post found' });
-      }
-      if (response.comments.length == 0) {
+      const comments = await commentServices.getComment(postId, skip, limit);
+
+      if (!comments) {
         return res.status(200).json({ message: 'No comments', data: [] });
       }
 
@@ -44,7 +42,7 @@ const commentController = {
       const nextPage = page + 2;
       return res.status(200).json({
         message: 'comments fetched successfully',
-        data: response.comments,
+        data: comments,
         page: { nextPage, previousPage },
       });
     } catch (error) {
