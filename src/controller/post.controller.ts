@@ -359,6 +359,8 @@ const postController = {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
+
+    // TODO: save the post in the user model in the userPost section
   },
   deletePost: async (
     req: TypeRequestBody<{
