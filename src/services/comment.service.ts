@@ -1,7 +1,41 @@
-import postModel, { Comment, Reply } from '../models/post.model';
 import { ICommentDisplay } from '../types/comment.types';
+import { Types } from 'mongoose';
+import postModel, { Comment, Reply } from '../models/post.model';
 
 const commentServices = {
+  getComment: async (postId: string, limit: number, skip: number) => {
+    const selectedFields = {
+      title: 0,
+      content: 0,
+      userId: 0,
+      company: 0,
+      role: 0,
+      postType: 0,
+      domain: 0,
+      rating: 0,
+      status: 0,
+      createdAt: 0,
+      upVotes: 0,
+      downVotes: 0,
+      views: 0,
+      bookmarks: 0,
+      tags: 0,
+      'comments.replies': 0,
+    };
+
+    const post = await postModel
+      .findById(postId)
+      .select(selectedFields)
+      .populate({
+        path: 'comments',
+        populate: { path: 'userId', select: 'username' },
+        options: { sort: { createdAt: -1 } },
+      });
+
+    return post?.comments
+      ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(skip, skip + limit);
+  },
   createComment: async (userId: string, postId: string, content: string) => {
     const comment = new Comment({ userId, content });
 
@@ -38,39 +72,6 @@ const commentServices = {
     const update = { $pull: { comments: { _id: commentId } } };
     return postModel.updateOne(conditions, update);
   },
-  getComment: async (postId: string, skip: number, limit: number) => {
-    const selectedFields = {
-      title: 0,
-      content: 0,
-      userId: 0,
-      company: 0,
-      role: 0,
-      postType: 0,
-      domain: 0,
-      rating: 0,
-      status: 0,
-      createdAt: 0,
-      upVotes: 0,
-      downVotes: 0,
-      views: 0,
-      bookmarks: 0,
-      tags: 0,
-      'comments.replies': 0,
-    };
-
-    const post = await postModel
-      .findById(postId)
-      .select(selectedFields)
-      .populate({
-        path: 'comments',
-        populate: { path: 'userId', select: 'username' },
-        options: { sort: { createdAt: -1 } },
-      });
-
-    return post?.comments
-      ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(skip, skip + limit);
-  },
   createReply: async (
     userId: string,
     postId: string,
@@ -92,6 +93,53 @@ const commentServices = {
     // Check if post is updated or not, if updated return the comment id
     if (!post) return null;
     return reply._id;
+  },
+  deleteReply: (postId: string, commentId: string, replyId: string) => {
+    const condition = {
+      _id: postId,
+      comments: {
+        $elemMatch: {
+          _id: commentId,
+          replies: {
+            $elemMatch: {
+              _id: replyId,
+            },
+          },
+        },
+      },
+    };
+
+    const update = {
+      $pull: { 'comments.$[].replies': { _id: replyId } },
+    };
+
+    return postModel.updateOne(condition, update);
+  },
+  deleteReplyUsingAuthorId: (
+    postId: string,
+    commentId: string,
+    replyId: string,
+    userId: Types.ObjectId,
+  ) => {
+    const condition = {
+      _id: postId,
+      comments: {
+        $elemMatch: {
+          _id: commentId,
+          replies: {
+            $elemMatch: {
+              _id: replyId,
+            },
+          },
+        },
+      },
+    };
+
+    const update = {
+      $pull: { 'comments.$[].replies': { _id: replyId, userId } },
+    };
+
+    return postModel.updateOne(condition, update);
   },
 };
 
