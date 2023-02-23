@@ -7,3 +7,12 @@ export interface IComment {
   createdAt: Date;
   replies: IReply[];
 }
+
+export interface ICommentDisplay {
+  userId: {
+    _id: Types.ObjectId;
+    username: string;
+  };
+  content: string;
+  createdAt: Date;
+}
