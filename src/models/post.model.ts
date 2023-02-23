@@ -4,7 +4,7 @@ import { IComment } from '../types/comment.types';
 import { IReply } from '../types/reply.types';
 
 const replySchema = new Schema<IReply>({
-  userId: { type: Schema.Types.ObjectId, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now() },
 });

@@ -101,8 +101,63 @@ const commentController = {
       return res.status(500).json({ message: 'Something went wrong...' });
     }
   },
-  getCommentReplies: async (Req: Request, res: Response) => {
-    return res.status(200).json({ message: 'in get nested Comment' });
+  getCommentReplies: async (req: Request, res: Response) => {
+    const postId = req.params['postid'];
+    const commentId = req.params['commentid'];
+
+    if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
+      return res
+        .status(404)
+        .json({ message: 'Please provide a valid Post with Comment to reply' });
+    }
+
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
+
+    // default limit
+    if (!limit || limit <= 0) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+    }
+
+    // default page
+    if (!page || page < 0) {
+      page = 0;
+    }
+
+    try {
+      // Calculate the total number of pages to skip
+      const skip = limit * page;
+
+      const replies = await commentServices.getAllReplies(
+        postId,
+        commentId,
+        limit,
+        skip,
+      );
+
+      if (!replies) {
+        return res
+          .status(200)
+          .json({ message: 'No replies to display', data: [] });
+      }
+
+      // as frontend is 1 based page index
+      const nextPage = page + 2;
+
+      // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
+      const previousPage = page === 0 ? undefined : page;
+
+      return res.status(200).json({
+        message: 'Replies fetched successfully',
+        data: replies,
+        page: { nextPage, previousPage },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
   },
   createCommentReply: async (
     req: TypeRequestBody<{

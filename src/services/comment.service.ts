@@ -1,6 +1,28 @@
 import postModel, { Comment, Reply } from '../models/post.model';
 
 const commentServices = {
+  getAllReplies: async (
+    postId: string,
+    commentId: string,
+    limit: number,
+    skip: number,
+  ) => {
+    // TODO: Have to optimize it such that pagination is done in Database itself
+    const conditions = { _id: postId, 'comments._id': commentId };
+    const parametersToGet = { _id: 0, 'comments.replies.$': 1 };
+
+    const post = await postModel.findOne(conditions, parametersToGet).populate({
+      path: 'comments.replies',
+      populate: { path: 'userId', select: 'username' },
+    });
+
+    const replies = post?.comments[0].replies;
+    if (!replies) return null;
+
+    return replies
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(skip, skip + limit);
+  },
   createComment: async (userId: string, postId: string, content: string) => {
     const comment = new Comment({ userId, content });
 
