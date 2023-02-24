@@ -11,16 +11,26 @@ app.use(express.static(__dirname + '/public'));
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Setting dynamic origins
+const corsOriginWhitelist = [
+  'http://localhost:3000',
+  'https://official-interview-experience.netlify.app',
+];
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'https://official-interview-experience.netlify.app',
-    ],
+    origin: function (origin, callback) {
+      if (origin && corsOriginWhitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true,
   }),
 );
+
 app.use(cookieParser());
 
 // Routes
