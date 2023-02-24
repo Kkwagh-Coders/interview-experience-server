@@ -13,19 +13,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Setting dynamic origins
-const corsOriginWhitelist = [
-  'http://localhost:3000',
-  'https://official-interview-experience.netlify.app',
-];
+// TODO: Issue: On making the origin for cors the mail url is not working
+// ! Find a solution to fix
+// const corsOriginWhitelist = [
+//   'http://localhost:3000',
+//   'https://official-interview-experience.netlify.app',
+// ];
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (origin && corsOriginWhitelist.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true,
   }),
