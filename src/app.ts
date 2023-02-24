@@ -12,21 +12,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Setting dynamic origins
-// TODO: Issue: On making the origin for cors the mail url is not working
-// ! Find a solution to fix
-// const corsOriginWhitelist = [
-//   'http://localhost:3000',
-//   'https://official-interview-experience.netlify.app',
-// ];
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'DELETE', 'PUT'],
-    credentials: true,
-  }),
-);
-
 app.use(cookieParser());
 
 // Routes
@@ -35,12 +20,12 @@ app.use('/posts', routes.postRoutes);
 app.use('/comments', routes.commentRoutes);
 
 // Home Route
-app.get('/', async (req, res) => {
+app.get('/', cors(), async (req, res) => {
   res.status(200).json({ name: 'Interview Experience API' });
 });
 
 // Not found route
-app.get('*', (req, res) => {
+app.get('*', cors(), (req, res) => {
   return res.status(404).json({ message: 'API URL is not valid' });
 });
 
