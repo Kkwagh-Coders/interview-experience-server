@@ -16,7 +16,18 @@ import generateEmailVerificationToken from '../utils/token/generateEmailVerifica
 import generateForgotPasswordToken from '../utils/token/generateForgotPasswordToken';
 
 const EXPIRY_DAYS = 180;
-const cookieOptions = {
+
+// Solving cookie issue: https://stackoverflow.com/questions/66503751/cross-domain-session-cookie-express-api-on-heroku-react-app-on-netlify/66553425#66553425?newreg=fcbd128fac8c4569a41212157ee2c173
+type COOKIE_OPTIONS = {
+  sameSite: 'none' | 'lax';
+  secure: boolean;
+  httpOnly: boolean;
+  maxAge: number;
+};
+
+const cookieOptions: COOKIE_OPTIONS = {
+  sameSite: process.env['NODE_ENV'] === 'production' ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
+  secure: process.env['NODE_ENV'] === 'production', // must be true if sameSite='none',
   httpOnly: true,
   maxAge: EXPIRY_DAYS * (24 * 60 * 60 * 1000),
 };
