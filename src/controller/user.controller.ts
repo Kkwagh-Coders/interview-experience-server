@@ -281,7 +281,7 @@ const userController = {
     }
   },
   logoutUser: (req: Request, res: Response) => {
-    res.clearCookie('token');
+    res.clearCookie('token', cookieOptions);
     return res.status(200).json({ message: 'User Logout successful' });
   },
   verifyEmail: async (req: Request, res: Response) => {
