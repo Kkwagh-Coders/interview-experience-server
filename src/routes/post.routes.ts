@@ -8,6 +8,7 @@ import cookieDataParser from '../middleware/cookieDataParser';
 const router = Router();
 
 // TODO : finalize endpoints
+router.options('', cors(corsOptionForCredentials));
 router.get(
   '',
   cors(corsOptionForCredentials),
@@ -15,6 +16,7 @@ router.get(
   postController.getAllPost,
 );
 
+router.options('/:id', cors(corsOptionForCredentials));
 router.get(
   '/:id',
   cors(corsOptionForCredentials),
@@ -22,6 +24,7 @@ router.get(
   postController.getPost,
 );
 
+router.options('/bookmarked/user', cors(corsOptionForCredentials));
 router.get(
   '/bookmarked/user',
   cors(corsOptionForCredentials),
@@ -29,6 +32,7 @@ router.get(
   postController.getUserBookmarkedPost,
 );
 
+router.options('/user/all', cors(corsOptionForCredentials));
 router.get(
   '/user/all',
   cors(corsOptionForCredentials),
@@ -36,6 +40,7 @@ router.get(
   postController.getUserPost,
 );
 
+router.options('', cors(corsOptionForCredentials));
 router.post(
   '',
   cors(corsOptionForCredentials),
@@ -43,6 +48,7 @@ router.post(
   postController.createPost,
 );
 
+router.options('/:id', cors(corsOptionForCredentials));
 router.delete(
   '/:id',
   cors(corsOptionForCredentials),
@@ -50,6 +56,7 @@ router.delete(
   postController.deletePost,
 );
 
+router.options('/upvote/:id', cors(corsOptionForCredentials));
 router.post(
   '/upvote/:id',
   cors(corsOptionForCredentials),
@@ -57,6 +64,7 @@ router.post(
   postController.upVotePost,
 );
 
+router.options('/downvote/:id', cors(corsOptionForCredentials));
 router.post(
   '/downvote/:id',
   cors(corsOptionForCredentials),
@@ -64,6 +72,7 @@ router.post(
   postController.downVotePost,
 );
 
+router.options('/bookmark/:id', cors(corsOptionForCredentials));
 router.post(
   '/bookmark/:id',
   cors(corsOptionForCredentials),
@@ -71,6 +80,7 @@ router.post(
   postController.addUserBookmark,
 );
 
+router.options('/bookmark/:id', cors(corsOptionForCredentials));
 router.delete(
   '/bookmark/:id',
   cors(corsOptionForCredentials),
