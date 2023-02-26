@@ -389,10 +389,7 @@ const userController = {
     }
   },
 
-  getUserProfile: async (
-    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
-    res: Response,
-  ) => {
+  getUserProfile: async (req: Request, res: Response) => {
     const paramId = req.params['id'];
 
     // if not a valid user id
