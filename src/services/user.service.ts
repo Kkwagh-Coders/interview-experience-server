@@ -61,6 +61,7 @@ const userServices = {
           isAdmin: 0,
           isEmailVerified: 0,
           'postData._id': 0,
+          _id: 0,
         },
       },
     ]);
