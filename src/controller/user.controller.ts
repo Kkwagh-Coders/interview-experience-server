@@ -361,6 +361,7 @@ const userController = {
       }
 
       const userResponseData = {
+        userId: user._id,
         username: user.username,
         email: user.email,
         isAdmin: user.isAdmin,
