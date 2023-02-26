@@ -23,6 +23,22 @@ const userServices = {
   verifyUserEmail: (email: string) => {
     return UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
   },
+
+  editProfile: (
+    userId: Types.ObjectId,
+    updatedProfile: {
+      username: string;
+      branch: string;
+      passingYear: string;
+      designation: string;
+      about: string;
+      github: string | null;
+      leetcode: string | null;
+      linkedin: string | null;
+    },
+  ) => {
+    return UserModel.findByIdAndUpdate(userId, updatedProfile);
+  },
 };
 
 export default userServices;

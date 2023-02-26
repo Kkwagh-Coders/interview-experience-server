@@ -387,6 +387,59 @@ const userController = {
         .json({ isLoggedIn: false, isAdmin: false, admin: null, user: null });
     }
   },
+
+  editUserProfile: async (
+    req: TypeRequestBody<{
+      username: string;
+      branch: string;
+      passingYear: string;
+      designation: string;
+      about: string;
+      github?: string;
+      leetcode?: string;
+      linkedin?: string;
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    // destructure the code
+    const {
+      username,
+      branch,
+      passingYear,
+      designation,
+      about,
+      github,
+      leetcode,
+      linkedin,
+    } = req.body;
+
+    if (!username || !branch || !passingYear || !designation || !about) {
+      return res.status(401).json({ message: 'Please enter all the fields ' });
+    }
+
+    const updatedProfile = {
+      username,
+      branch,
+      passingYear,
+      designation,
+      about,
+      github: github ? github : null,
+      leetcode: leetcode ? leetcode : null,
+      linkedin: linkedin ? linkedin : null,
+    };
+
+    const userId = req.body.authTokenData.id;
+    try {
+      const user = await userServices.editProfile(userId, updatedProfile);
+      return res
+        .status(200)
+        .json({ message: 'User Profile Edited Successfully', data: user });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong......' });
+    }
+  },
 };
 
 export default userController;

@@ -23,6 +23,14 @@ router.post(
   userController.registerUser,
 );
 
+router.options('/profile', cors(corsOptionForCredentials));
+router.put(
+  '/profile',
+  cors(corsOptionForCredentials),
+  isUserAuth,
+  userController.editUserProfile,
+);
+
 router.options('/forgot-password', cors(corsOptionForCredentials));
 router.post(
   '/forgot-password',
