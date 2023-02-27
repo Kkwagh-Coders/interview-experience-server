@@ -23,6 +23,14 @@ router.post(
   userController.registerUser,
 );
 
+router.options('/profile', cors(corsOptionForCredentials));
+router.put(
+  '/profile',
+  cors(corsOptionForCredentials),
+  isUserAuth,
+  userController.editUserProfile,
+);
+
 router.options('/profile/:id', cors(corsOptionForCredentials));
 router.get(
   '/profile/:id',
