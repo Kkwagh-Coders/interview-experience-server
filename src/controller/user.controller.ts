@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
+import mongoose, { Types } from 'mongoose';
 import sendEmailVerificationMail from '../services/mail/sendEmailVerificationMail';
 import sendForgotPasswordEmail from '../services/mail/sendForgotPasswordMail';
 import userServices from '../services/user.service';
@@ -438,6 +439,27 @@ const userController = {
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'something went wrong......' });
+    }
+  },
+
+  getUserProfile: async (req: Request, res: Response) => {
+    const paramId = req.params['id'];
+
+    // if not a valid user id
+    if (!mongoose.Types.ObjectId.isValid(paramId)) {
+      return res.status(404).json({ message: 'No such user found' });
+    }
+
+    const userId = new Types.ObjectId(paramId);
+    try {
+      const user = await userServices.getUserProfile(userId);
+      if (user.length === 0) {
+        return res.status(404).json({ message: 'No such User found' });
+      }
+      return res.status(200).json({ message: 'ok', data: user });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong...' });
     }
   },
 };
