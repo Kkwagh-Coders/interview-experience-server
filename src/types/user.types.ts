@@ -23,12 +23,10 @@ export interface IUserProfile {
   github: string | null;
   leetcode: string | null;
   linkedin: string | null;
-  postData: [
-    {
-      viewCount: number;
-      postCount: number;
-      upVoteCount: number;
-      downVoteCount: number;
-    },
-  ];
+  postData: {
+    viewCount: number;
+    postCount: number;
+    upVoteCount: number;
+    downVoteCount: number;
+  }[];
 }

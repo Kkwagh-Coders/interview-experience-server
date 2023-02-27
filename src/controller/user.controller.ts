@@ -452,11 +452,22 @@ const userController = {
 
     const userId = new Types.ObjectId(paramId);
     try {
-      const user = await userServices.getUserProfile(userId);
-      if (user.length === 0) {
+      const userProfile = await userServices.getUserProfile(userId);
+
+      if (userProfile.length === 0) {
         return res.status(404).json({ message: 'No such User found' });
       }
-      return res.status(200).json({ message: 'ok', data: user });
+
+      // if no post
+      if (userProfile[0].postData.length === 0) {
+        userProfile[0].postData.push({
+          viewCount: 0,
+          postCount: 0,
+          upVoteCount: 0,
+          downVoteCount: 0,
+        });
+      }
+      return res.status(200).json({ message: 'ok', data: userProfile });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'something went wrong...' });
