@@ -1,7 +1,7 @@
-import { Types } from 'mongoose';
+import { Aggregate, Types } from 'mongoose';
 import UserModel from '../models/user.model';
 
-import { IUser } from '../types/user.types';
+import { IUser, IUserProfile } from '../types/user.types';
 
 const userServices = {
   findUser: (email: string) => {
@@ -23,7 +23,7 @@ const userServices = {
   verifyUserEmail: (email: string) => {
     return UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
   },
-  getUserProfile: (userId: Types.ObjectId) => {
+  getUserProfile: (userId: Types.ObjectId): Aggregate<IUserProfile[]> => {
     return UserModel.aggregate([
       { $match: { _id: userId } },
       {
