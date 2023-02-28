@@ -73,8 +73,8 @@ export interface IPostList {
   createdAt: Date;
   upVotes: Types.ObjectId[];
   downVotes: Types.ObjectId[];
-  isUpvoted: boolean;
-  isdownVoted: boolean;
+  isUpVoted: boolean;
+  isDownVoted: boolean;
   isBookmarked: boolean;
 }
 
