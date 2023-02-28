@@ -15,6 +15,13 @@ const postController = {
   ) => {
     const { sortBy, articleType, jobRole, company, rating } = req.query;
 
+    // Getting search from query and making sure it is string
+    // If not then assigning it to empty string
+    let search = req.query['search'];
+    if (!search || typeof search !== 'string') {
+      search = '';
+    }
+
     let page = parseInt(req.query['page'] as string) - 1;
     let limit = parseInt(req.query['limit'] as string);
 
@@ -31,7 +38,7 @@ const postController = {
     }
 
     const skip = limit * page;
-    const filters: IPostFilter = {};
+    const filters: IPostFilter = { $and: [{}, {}] };
 
     //default sorting is by newest post first
     let sort = '-createdAt';
@@ -43,19 +50,28 @@ const postController = {
       // else if (sortBy === 'top') sort.voteCount = 'desc';
     }
 
+    // Adding search filter
+    filters['$and'][0] = {
+      $or: [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+      ],
+    };
+
     // check and find all the filter parameters
     // if articleType is in query
     if (articleType) {
-      filters.postType = articleType as string;
+      filters['$and'][1].postType = articleType as string;
     }
     if (jobRole) {
-      filters.role = jobRole as string;
+      filters['$and'][1].role = jobRole as string;
     }
     if (company) {
-      filters.company = company as string;
+      filters['$and'][1].company = company as string;
     }
     const convertedRating = parseInt(rating as string);
-    if (convertedRating) filters.rating = convertedRating;
+    if (convertedRating) filters['$and'][1].rating = convertedRating;
 
     try {
       const userId = req.body.userId;

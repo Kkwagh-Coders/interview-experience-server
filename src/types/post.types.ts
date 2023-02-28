@@ -79,8 +79,19 @@ export interface IPostList {
 }
 
 export interface IPostFilter {
-  role?: string;
-  postType?: string;
-  company?: string;
-  rating?: number;
+  $and: [
+    {
+      $or?: [
+        { title: { $regex: string; $options: string } },
+        { content: { $regex: string; $options: string } },
+        { tags: { $regex: string; $options: string } },
+      ];
+    },
+    {
+      role?: string;
+      postType?: string;
+      company?: string;
+      rating?: number;
+    },
+  ];
 }
