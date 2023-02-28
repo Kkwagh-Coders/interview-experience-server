@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
+import mongoose, { Types } from 'mongoose';
 import sendEmailVerificationMail from '../services/mail/sendEmailVerificationMail';
 import sendForgotPasswordEmail from '../services/mail/sendForgotPasswordMail';
 import userServices from '../services/user.service';
@@ -385,6 +386,91 @@ const userController = {
       return res
         .status(400)
         .json({ isLoggedIn: false, isAdmin: false, admin: null, user: null });
+    }
+  },
+
+  editUserProfile: async (
+    req: TypeRequestBody<{
+      username: string;
+      branch: string;
+      passingYear: string;
+      designation: string;
+      about: string;
+      github?: string;
+      leetcode?: string;
+      linkedin?: string;
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    // destructure the code
+    const {
+      username,
+      branch,
+      passingYear,
+      designation,
+      about,
+      github,
+      leetcode,
+      linkedin,
+    } = req.body;
+
+    if (!username || !branch || !passingYear || !designation || !about) {
+      return res.status(401).json({ message: 'Please enter all the fields ' });
+    }
+
+    const updatedProfile = {
+      username,
+      branch,
+      passingYear,
+      designation,
+      about,
+      github: github ? github : null,
+      leetcode: leetcode ? leetcode : null,
+      linkedin: linkedin ? linkedin : null,
+    };
+
+    const userId = req.body.authTokenData.id;
+    try {
+      const user = await userServices.editProfile(userId, updatedProfile);
+      return res
+        .status(200)
+        .json({ message: 'User Profile Edited Successfully', data: user });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong......' });
+    }
+  },
+
+  getUserProfile: async (req: Request, res: Response) => {
+    const paramId = req.params['id'];
+
+    // if not a valid user id
+    if (!mongoose.Types.ObjectId.isValid(paramId)) {
+      return res.status(404).json({ message: 'No such user found' });
+    }
+
+    const userId = new Types.ObjectId(paramId);
+    try {
+      const userProfile = await userServices.getUserProfile(userId);
+
+      if (userProfile.length === 0) {
+        return res.status(404).json({ message: 'No such User found' });
+      }
+
+      // if no post
+      if (userProfile[0].postData.length === 0) {
+        userProfile[0].postData.push({
+          viewCount: 0,
+          postCount: 0,
+          upVoteCount: 0,
+          downVoteCount: 0,
+        });
+      }
+      return res.status(200).json({ message: 'ok', data: userProfile });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong...' });
     }
   },
 };
