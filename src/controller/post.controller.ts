@@ -98,6 +98,7 @@ const postController = {
           isUpVoted,
           isDownVoted,
           isBookmarked,
+          votes: upVotes.length - downVotes.length,
           upVotes: undefined,
           downVotes: undefined,
           bookmarks: undefined,
@@ -228,6 +229,7 @@ const postController = {
           isUpVoted,
           isDownVoted,
           isBookmarked,
+          votes: upVotes.length - downVotes.length,
           upVotes: undefined,
           downVotes: undefined,
         };
@@ -292,6 +294,7 @@ const postController = {
           isUpVoted,
           isDownVoted,
           isBookmarked,
+          votes: upVotes.length - downVotes.length,
           upVotes: undefined,
           downVotes: undefined,
           bookmarks: undefined,
