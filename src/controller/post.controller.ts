@@ -78,9 +78,11 @@ const postController = {
       const posts = await postServices.getAllPosts(filters, sort, limit, skip);
 
       if (posts.length === 0) {
-        return res
-          .status(200)
-          .json({ message: 'No posts to display', data: [] });
+        return res.status(200).json({
+          message: 'No posts to display',
+          data: [],
+          page: { previousPage: page === 0 ? undefined : page },
+        });
       }
 
       const response = posts.map((post) => {
@@ -206,9 +208,11 @@ const postController = {
         skip,
       );
       if (posts.length === 0) {
-        return res
-          .status(200)
-          .json({ message: 'No posts to display', data: [] });
+        return res.status(200).json({
+          message: 'No posts to display',
+          data: [],
+          page: { previousPage: page === 0 ? undefined : page },
+        });
       }
 
       const response = posts.map((post) => {
@@ -268,9 +272,11 @@ const postController = {
       const posts = await postServices.getUserPosts(userId, limit, skip);
 
       if (posts.length === 0) {
-        return res
-          .status(200)
-          .json({ message: 'No posts to display', data: [] });
+        return res.status(200).json({
+          message: 'No posts to display',
+          data: [],
+          page: { previousPage: page === 0 ? undefined : page },
+        });
       }
 
       const response = posts.map((post) => {
