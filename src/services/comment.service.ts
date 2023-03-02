@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import postModel, { Comment, Reply } from '../models/post.model';
 
 const commentServices = {
-  getComment: async (postId: string, limit: number, skip: number) => {
+  getComment: async (postId: string, skip: number, limit: number) => {
     const selectedFields = {
       title: 0,
       content: 0,
@@ -31,6 +31,12 @@ const commentServices = {
         options: { sort: { createdAt: -1 } },
       });
 
+    console.log(skip, skip + limit);
+    console.log(
+      post?.comments
+        ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(skip, skip + limit),
+    );
     return post?.comments
       ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(skip, skip + limit);
