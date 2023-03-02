@@ -114,12 +114,10 @@ const postController = {
       const previousPage = page === 0 ? undefined : page;
       return res.status(200).json({
         message: 'post fetched successfully',
-        data: {
-          data: response,
-          company: dataCompanyRole[0].company,
-          role: dataCompanyRole[0].role,
-          page: { nextPage, previousPage },
-        },
+        data: response,
+        company: dataCompanyRole[0].company,
+        role: dataCompanyRole[0].role,
+        page: { nextPage, previousPage },
       });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });
