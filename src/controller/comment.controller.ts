@@ -34,8 +34,15 @@ const commentController = {
     try {
       const comments = await commentServices.getComment(postId, skip, limit);
 
-      if (!comments) {
-        return res.status(200).json({ message: 'No comments', data: [] });
+      if (!comments || comments.length === 0) {
+        return res.status(200).json({
+          message: 'No comments',
+          data: [],
+          page: {
+            previousPage: page === 0 ? undefined : page,
+            nextPage: undefined,
+          },
+        });
       }
 
       const previousPage = page === 0 ? undefined : page;
@@ -178,10 +185,15 @@ const commentController = {
         skip,
       );
 
-      if (!replies) {
-        return res
-          .status(200)
-          .json({ message: 'No replies to display', data: [] });
+      if (!replies || replies.length === 0) {
+        return res.status(200).json({
+          message: 'No replies to display',
+          data: [],
+          page: {
+            previousPage: page === 0 ? undefined : page,
+            nextPage: undefined,
+          },
+        });
       }
 
       // as frontend is 1 based page index
