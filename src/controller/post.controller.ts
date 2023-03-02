@@ -146,6 +146,7 @@ const postController = {
 
       // calculate vote count
       const voteCount = post.upVotes.length - post.downVotes.length;
+      const bookmarkCount = post.bookmarks.length;
 
       // check whether user has upVoted or downVoted the post
       const isUpVoted = post.upVotes.includes(userId);
@@ -164,6 +165,7 @@ const postController = {
           rating: post.rating,
           createdAt: post.createdAt,
           voteCount,
+          bookmarkCount,
           views: post.views,
           tags: post.tags,
           postAuthorId,
