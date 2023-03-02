@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { DeleteResult } from 'mongodb';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
@@ -179,11 +179,14 @@ const postController = {
     }
   },
 
-  getUserBookmarkedPost: async (
-    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
-    res: Response,
-  ) => {
-    const userId = req.body.authTokenData.id;
+  getUserBookmarkedPost: async (req: Request, res: Response) => {
+    const paramUserId = req.params['userId'];
+
+    if (!mongoose.Types.ObjectId.isValid(paramUserId)) {
+      return res.status(404).json({ message: 'No such User found' });
+    }
+
+    const userId = new Types.ObjectId(paramUserId);
 
     // queryPage should start from 1
     let page = parseInt(req.query['page'] as string) - 1;
@@ -249,10 +252,11 @@ const postController = {
     }
   },
 
-  getUserPost: async (
-    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
-    res: Response,
-  ) => {
+  getUserPost: async (req: Request, res: Response) => {
+    const paramUserId = req.params['userId'];
+    if (!Types.ObjectId.isValid(paramUserId)) {
+      return res.status(404).json({ message: 'No such User found' });
+    }
     // query page will start from 1;
     let page = parseInt(req.query['page'] as string) - 1;
     let limit = parseInt(req.query['limit'] as string);
@@ -269,7 +273,7 @@ const postController = {
     }
 
     const skip = limit * page;
-    const userId = req.body.authTokenData.id;
+    const userId = new Types.ObjectId(paramUserId);
     try {
       const posts = await postServices.getUserPosts(userId, limit, skip);
 

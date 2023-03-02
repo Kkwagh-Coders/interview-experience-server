@@ -24,19 +24,17 @@ router.get(
   postController.getPost,
 );
 
-router.options('/bookmarked/user', cors(corsOptionForCredentials));
+router.options('/user/bookmarked/:userId', cors(corsOptionForCredentials));
 router.get(
-  '/bookmarked/user',
+  '/user/bookmarked/:userId',
   cors(corsOptionForCredentials),
-  isUserAuth,
   postController.getUserBookmarkedPost,
 );
 
-router.options('/user/all', cors(corsOptionForCredentials));
+router.options('/user/all/:userId', cors(corsOptionForCredentials));
 router.get(
-  '/user/all',
+  '/user/all/:userId',
   cors(corsOptionForCredentials),
-  isUserAuth,
   postController.getUserPost,
 );
 
