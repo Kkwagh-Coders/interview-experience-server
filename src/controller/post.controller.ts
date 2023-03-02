@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { DeleteResult } from 'mongodb';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
@@ -85,6 +85,9 @@ const postController = {
         });
       }
 
+      // get the list of companies and roles
+      const dataCompanyRole = await postServices.getCompanyAndRole();
+
       const response = posts.map((post) => {
         const { content, upVotes, downVotes, bookmarks } = post;
         const textContent = generateTextFromHTML(content);
@@ -111,8 +114,12 @@ const postController = {
       const previousPage = page === 0 ? undefined : page;
       return res.status(200).json({
         message: 'post fetched successfully',
-        data: response,
-        page: { nextPage, previousPage },
+        data: {
+          data: response,
+          company: dataCompanyRole[0].company,
+          role: dataCompanyRole[0].role,
+          page: { nextPage, previousPage },
+        },
       });
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong.....' });
@@ -558,6 +565,23 @@ const postController = {
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong...' });
+    }
+  },
+
+  // to be called when the create post page is displayed
+  getCompanyAndRole: async (req: Request, res: Response) => {
+    try {
+      const data = await postServices.getCompanyAndRole();
+      return res.status(200).json({
+        message: 'Company and role fetched successfully',
+        data: {
+          company: data[0].company,
+          role: data[0].role,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
     }
   },
 };

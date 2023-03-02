@@ -40,6 +40,12 @@ router.get(
   postController.getUserPost,
 );
 
+router.options('/data/company-roles', cors(corsOptionForCredentials));
+router.get(
+  '/data/company-roles',
+  cors(corsOptionForCredentials),
+  postController.getCompanyAndRole,
+);
 router.options('', cors(corsOptionForCredentials));
 router.post(
   '',

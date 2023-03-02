@@ -6,7 +6,7 @@ import {
   IPostFilter,
   // IPostSort,
 } from '../types/post.types';
-import { Types } from 'mongoose';
+import { Aggregate, Types } from 'mongoose';
 
 const postServices = {
   createPost: (post: IPostForm) => {
@@ -133,6 +133,18 @@ const postServices = {
     const update = { $pull: { bookmarks: userId } };
 
     return postModel.updateOne(conditions, update);
+  },
+
+  getCompanyAndRole: (): Aggregate<{ company: string[]; role: string[] }[]> => {
+    return postModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          company: { $addToSet: '$company' },
+          role: { $addToSet: '$role' },
+        },
+      },
+    ]);
   },
 };
 
