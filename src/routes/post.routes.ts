@@ -28,6 +28,7 @@ router.options('/user/bookmarked/:userId', cors(corsOptionForCredentials));
 router.get(
   '/user/bookmarked/:userId',
   cors(corsOptionForCredentials),
+  cookieDataParser,
   postController.getUserBookmarkedPost,
 );
 
@@ -35,6 +36,7 @@ router.options('/user/all/:userId', cors(corsOptionForCredentials));
 router.get(
   '/user/all/:userId',
   cors(corsOptionForCredentials),
+  cookieDataParser,
   postController.getUserPost,
 );
 

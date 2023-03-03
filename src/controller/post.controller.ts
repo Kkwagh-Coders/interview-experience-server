@@ -184,8 +184,16 @@ const postController = {
     }
   },
 
-  getUserBookmarkedPost: async (req: Request, res: Response) => {
+  getUserBookmarkedPost: async (
+    req: TypeRequestBody<{ userId: Types.ObjectId | null }>,
+    res: Response,
+  ) => {
+    // It denotes the user which has made the request
+    const reqUserId = req.body.userId;
+
     const paramUserId = req.params['userId'];
+
+    console.log(reqUserId, paramUserId);
 
     if (!mongoose.Types.ObjectId.isValid(paramUserId)) {
       return res.status(404).json({ message: 'No such User found' });
@@ -225,11 +233,18 @@ const postController = {
       }
 
       const response = posts.map((post) => {
-        const { upVotes, downVotes } = post;
-        const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
+        const { upVotes, downVotes, bookmarks } = post;
+        const isUpVoted = upVotes.some(
+          (id) => reqUserId && id.equals(reqUserId),
+        );
         const isDownVoted =
-          !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
-        const isBookmarked = true;
+          !isUpVoted &&
+          downVotes.some((id) => reqUserId && id.equals(reqUserId));
+
+        const isBookmarked = bookmarks.some(
+          (id) => reqUserId && id.equals(reqUserId),
+        );
+
         const textContent = generateTextFromHTML(post.content);
 
         return {
@@ -254,11 +269,19 @@ const postController = {
         page: { nextPage, previousPage },
       });
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
   },
 
-  getUserPost: async (req: Request, res: Response) => {
+  getUserPost: async (
+    req: TypeRequestBody<{ userId: Types.ObjectId | null }>,
+    res: Response,
+  ) => {
+    // It denotes the user which has made the request
+    const reqUserId = req.body.userId;
+
     const paramUserId = req.params['userId'];
     if (!Types.ObjectId.isValid(paramUserId)) {
       return res.status(404).json({ message: 'No such User found' });
@@ -293,9 +316,10 @@ const postController = {
 
       const response = posts.map((post) => {
         const { upVotes, downVotes, bookmarks } = post;
-        const isUpVoted = upVotes.some((id) => id == userId);
-        const isDownVoted = !isUpVoted && downVotes.some((id) => id == userId);
-        const isBookmarked = bookmarks.some((id) => id == userId);
+        const isUpVoted = upVotes.some((id) => id == reqUserId);
+        const isDownVoted =
+          !isUpVoted && downVotes.some((id) => id == reqUserId);
+        const isBookmarked = bookmarks.some((id) => id == reqUserId);
         const textContent = generateTextFromHTML(post.content);
 
         return {

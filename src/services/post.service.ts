@@ -33,8 +33,6 @@ const postServices = {
       .select({
         comments: 0,
         tags: 0,
-        // rating: 0,
-        bookmarks: 0,
         views: 0,
         status: 0,
       })
