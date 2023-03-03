@@ -566,6 +566,23 @@ const postController = {
       return res.status(500).json({ message: 'Something went wrong...' });
     }
   },
+
+  // to be called when the create post page is displayed
+  getCompanyAndRole: async (req: Request, res: Response) => {
+    try {
+      const data = await postServices.getCompanyAndRole();
+      return res.status(200).json({
+        message: 'Company and role fetched successfully',
+        data: {
+          company: data[0].company,
+          role: data[0].role,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
 };
 
 export default postController;
