@@ -473,6 +473,21 @@ const userController = {
       return res.status(500).json({ message: 'something went wrong...' });
     }
   },
+
+  searchUser: async (req: Request, res: Response) => {
+    let search = req.query['searchparam'] as string;
+    if (!search) search = '';
+
+    try {
+      const userList = await userServices.searchUser(search);
+      return res
+        .status(200)
+        .json({ message: 'Users fetched successfully', data: userList });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'something went wrong...' });
+    }
+  },
 };
 
 export default userController;

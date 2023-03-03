@@ -83,6 +83,24 @@ const userServices = {
       },
     ]);
   },
+
+  searchUser: (search: string): Aggregate<{ username: string }[]> => {
+    console.log(search);
+    return UserModel.aggregate([
+      {
+        $match: {
+          username: {
+            $regex: new RegExp(search, 'i'),
+          },
+        },
+      },
+      {
+        $project: {
+          username: 1,
+        },
+      },
+    ]);
+  },
 };
 
 export default userServices;
