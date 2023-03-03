@@ -88,9 +88,12 @@ const postController = {
       const response = posts.map((post) => {
         const { content, upVotes, downVotes, bookmarks } = post;
         const textContent = generateTextFromHTML(content);
-        const isUpVoted = upVotes.some((id) => userId === id);
-        const isDownVoted = !isUpVoted && downVotes.some((id) => userId === id);
-        const isBookmarked = bookmarks.some((id) => userId === id);
+        const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
+        const isDownVoted =
+          !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
+        const isBookmarked = bookmarks.some(
+          (id) => userId && id.equals(userId),
+        );
 
         return {
           ...post,
@@ -223,8 +226,9 @@ const postController = {
 
       const response = posts.map((post) => {
         const { upVotes, downVotes } = post;
-        const isUpVoted = upVotes.some((id) => userId === id);
-        const isDownVoted = !isUpVoted && downVotes.some((id) => userId === id);
+        const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
+        const isDownVoted =
+          !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
         const isBookmarked = true;
         const textContent = generateTextFromHTML(post.content);
 
