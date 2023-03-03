@@ -476,13 +476,39 @@ const userController = {
 
   searchUser: async (req: Request, res: Response) => {
     let search = req.query['searchparam'] as string;
-    if (!search) search = '';
+    let page = parseInt(req.query['page'] as string) - 1;
+    let limit = parseInt(req.query['limit'] as string);
 
+    if (!search) search = '';
+    if (!page || page < 0) page = 0;
+    if (!limit || limit <= 0) limit = 10;
+
+    if (limit > 100) {
+      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+    }
+
+    const skip = limit * page;
     try {
-      const userList = await userServices.searchUser(search);
-      return res
-        .status(200)
-        .json({ message: 'Users fetched successfully', data: userList });
+      const userList = await userServices.searchUser(search, limit, skip);
+
+      if (userList.length === 0) {
+        return res.status(200).json({
+          message: 'No posts to display',
+          data: [],
+          page: { previousPage: page === 0 ? undefined : page },
+        });
+      }
+
+      // as frontend is 1 based page index
+      const nextPage = page + 2;
+      // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
+      const previousPage = page === 0 ? undefined : page;
+
+      return res.status(200).json({
+        message: 'Users fetched successfully',
+        data: userList,
+        page: { nextPage, previousPage },
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'something went wrong...' });

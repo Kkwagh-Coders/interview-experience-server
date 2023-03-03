@@ -84,8 +84,11 @@ const userServices = {
     ]);
   },
 
-  searchUser: (search: string): Aggregate<{ username: string }[]> => {
-    console.log(search);
+  searchUser: (
+    search: string,
+    limit: number,
+    skip: number,
+  ): Aggregate<{ username: string }[]> => {
     return UserModel.aggregate([
       {
         $match: {
@@ -93,6 +96,12 @@ const userServices = {
             $regex: new RegExp(search, 'i'),
           },
         },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
       },
       {
         $project: {
