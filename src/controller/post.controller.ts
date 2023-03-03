@@ -85,9 +85,6 @@ const postController = {
         });
       }
 
-      // get the list of companies and roles
-      const dataCompanyRole = await postServices.getCompanyAndRole();
-
       const response = posts.map((post) => {
         const { content, upVotes, downVotes, bookmarks } = post;
         const textContent = generateTextFromHTML(content);
@@ -115,8 +112,6 @@ const postController = {
       return res.status(200).json({
         message: 'post fetched successfully',
         data: response,
-        company: dataCompanyRole[0].company,
-        role: dataCompanyRole[0].role,
         page: { nextPage, previousPage },
       });
     } catch (error) {
