@@ -66,4 +66,11 @@ router.delete(
   userController.deleteUser,
 );
 
+router.options('/search', cors(corsOptionForCredentials));
+router.get(
+  '/search',
+  cors(corsOptionForCredentials),
+  userController.searchUser,
+);
+
 export default router;

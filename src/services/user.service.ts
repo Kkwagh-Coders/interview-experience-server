@@ -83,6 +83,35 @@ const userServices = {
       },
     ]);
   },
+
+  searchUser: (
+    search: string,
+    limit: number,
+    skip: number,
+  ): Aggregate<{ username: string; branch: string; passingYear: string }[]> => {
+    return UserModel.aggregate([
+      {
+        $match: {
+          username: {
+            $regex: new RegExp(search, 'i'),
+          },
+        },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $project: {
+          username: 1,
+          branch: 1,
+          passingYear: 1,
+        },
+      },
+    ]);
+  },
 };
 
 export default userServices;
