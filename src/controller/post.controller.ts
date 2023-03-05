@@ -597,11 +597,21 @@ const postController = {
   getCompanyAndRole: async (req: Request, res: Response) => {
     try {
       const data = await postServices.getCompanyAndRole();
+      if (!data || data.length === 0) {
+        return res.status(200).json({
+          message: 'Company and role fetched successfully',
+          data: {
+            company: [],
+            role: [],
+          },
+        });
+      }
+
       return res.status(200).json({
         message: 'Company and role fetched successfully',
         data: {
-          company: data[0].company,
-          role: data[0].role,
+          company: data[0].company ? data[0].company : [],
+          role: data[0].role ? data[0].role : [],
         },
       });
     } catch (error) {
