@@ -88,7 +88,7 @@ const userServices = {
     search: string,
     limit: number,
     skip: number,
-  ): Aggregate<{ username: string }[]> => {
+  ): Aggregate<{ username: string; branch: string; passingYear: string }[]> => {
     return UserModel.aggregate([
       {
         $match: {
@@ -106,6 +106,8 @@ const userServices = {
       {
         $project: {
           username: 1,
+          branch: 1,
+          passingYear: 1,
         },
       },
     ]);
