@@ -106,8 +106,9 @@ const userServices = {
       {
         $project: {
           username: 1,
-          branch: 1,
+          designation: 1,
           passingYear: 1,
+          branch: 1,
         },
       },
     ]);
