@@ -193,8 +193,6 @@ const postController = {
 
     const paramUserId = req.params['userId'];
 
-    console.log(reqUserId, paramUserId);
-
     if (!mongoose.Types.ObjectId.isValid(paramUserId)) {
       return res.status(404).json({ message: 'No such User found' });
     }
