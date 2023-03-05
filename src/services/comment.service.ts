@@ -30,13 +30,6 @@ const commentServices = {
         populate: { path: 'userId', select: 'username' },
         options: { sort: { createdAt: -1 } },
       });
-
-    console.log(skip, skip + limit);
-    console.log(
-      post?.comments
-        ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(skip, skip + limit),
-    );
     return post?.comments
       ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(skip, skip + limit);
