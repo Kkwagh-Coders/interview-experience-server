@@ -622,7 +622,7 @@ const postController = {
 
   editPost: async (
     req: TypeRequestBody<{
-      postId: string;
+      postId?: string;
       title?: string;
       content?: string;
       company?: string;
@@ -653,7 +653,6 @@ const postController = {
 
     // Check if user has passed all values
     if (!postId || !Types.ObjectId.isValid(postId)) {
-      console.log('post id is not valid');
       return res.status(401).json({ message: 'NO such post found.... ' });
     }
 
