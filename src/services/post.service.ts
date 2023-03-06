@@ -144,6 +144,20 @@ const postServices = {
       },
     ]);
   },
+
+  editPost: (
+    postId: string,
+    userId: Types.ObjectId,
+    editedPostData: IPostForm,
+  ) => {
+    return postModel.replaceOne(
+      {
+        _id: postId,
+        userId,
+      },
+      editedPostData,
+    );
+  },
 };
 
 export default postServices;

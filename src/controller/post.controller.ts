@@ -619,6 +619,92 @@ const postController = {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
   },
+
+  editPost: async (
+    req: TypeRequestBody<{
+      postId: string;
+      title?: string;
+      content?: string;
+      company?: string;
+      role?: string;
+      postType?: string;
+      domain?: string;
+      rating?: number;
+      status?: string;
+      tags?: string[];
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    //destructuring
+    const {
+      postId,
+      title,
+      content,
+      company,
+      role,
+      postType,
+      domain,
+      rating,
+      status,
+      tags,
+      authTokenData,
+    } = req.body;
+
+    // Check if user has passed all values
+    if (!postId || !Types.ObjectId.isValid(postId)) {
+      console.log('post id is not valid');
+      return res.status(401).json({ message: 'NO such post found.... ' });
+    }
+
+    if (
+      !title ||
+      !content ||
+      !company ||
+      !role ||
+      !postType ||
+      !domain ||
+      !rating ||
+      !status ||
+      !tags
+    ) {
+      return res
+        .status(401)
+        .json({ message: 'Please enter all required fields ' });
+    }
+
+    const userId = authTokenData.id;
+    const editedPostData: IPostForm = {
+      title,
+      content,
+      company,
+      role,
+      postType,
+      domain,
+      rating,
+      status,
+      tags,
+      userId: authTokenData.id,
+    };
+
+    try {
+      const post = await postServices.editPost(postId, userId, editedPostData);
+
+      if (!post.acknowledged) {
+        console.log('Not acknowledged while editing the post');
+        return res.status(400).json({ message: 'Something went wrong.....' });
+      }
+
+      if (post.modifiedCount === 0) {
+        return res.status(400).json({ message: 'Post cannot be edited' });
+      }
+
+      return res.status(200).json({ message: 'Post edited succesfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
 };
 
 export default postController;
