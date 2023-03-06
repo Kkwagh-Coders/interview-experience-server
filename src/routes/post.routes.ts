@@ -91,4 +91,11 @@ router.delete(
   postController.removeUserBookmark,
 );
 
+router.options('/edit', cors(corsOptionForCredentials));
+router.put(
+  '/edit',
+  cors(corsOptionForCredentials),
+  isUserAuth,
+  postController.editPost,
+);
 export default router;
