@@ -95,6 +95,7 @@ const userServices = {
           username: {
             $regex: new RegExp(search, 'i'),
           },
+          isEmailVerified: true,
         },
       },
       {
