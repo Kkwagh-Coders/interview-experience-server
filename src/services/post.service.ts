@@ -150,13 +150,20 @@ const postServices = {
     userId: Types.ObjectId,
     editedPostData: IPostForm,
   ) => {
-    return postModel.replaceOne(
-      {
-        _id: postId,
-        userId,
-      },
-      editedPostData,
-    );
+    const filter = { _id: postId, userId };
+    const update = {
+      title: editedPostData.title,
+      content: editedPostData.content,
+      company: editedPostData.company,
+      role: editedPostData.role,
+      postType: editedPostData.postType,
+      domain: editedPostData.domain,
+      rating: editedPostData.rating,
+      status: editedPostData.status,
+      tags: editedPostData.tags,
+    };
+
+    return postModel.findOneAndUpdate(filter, update);
   },
 };
 

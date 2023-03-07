@@ -689,16 +689,17 @@ const postController = {
     try {
       const post = await postServices.editPost(postId, userId, editedPostData);
 
-      if (!post.acknowledged) {
+      if (!post) {
         console.log('Not acknowledged while editing the post');
-        return res.status(400).json({ message: 'Something went wrong.....' });
+        return res.status(400).json({
+          message:
+            'NO such post Found OR You do not have permission to edit this post.... ',
+        });
       }
 
-      if (post.modifiedCount === 0) {
-        return res.status(400).json({ message: 'Post cannot be edited' });
-      }
-
-      return res.status(200).json({ message: 'Post edited succesfully' });
+      return res
+        .status(200)
+        .json({ message: 'Post edited succesfully', data: post });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
