@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import quizServices from '../services/quiz.service';
-import { IQuiz } from '../types/quiz.types';
+import { IQuiz, IQuizHistorySubmit } from '../types/quiz.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
 
@@ -103,6 +103,57 @@ const quizController = {
       return res
         .status(200)
         .json({ message: 'questions fetch successfully', data: questions });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
+
+  submitQuiz: async (
+    req: TypeRequestBody<{
+      topic: string;
+      totalQuestionsCount: number;
+      correctAnswerCount: number;
+      authTokenData: IAuthToken;
+    }>,
+    res: Response,
+  ) => {
+    const { topic, totalQuestionsCount, correctAnswerCount } = req.body;
+    const userId = req.body.authTokenData.id;
+
+    if (!topic) {
+      return res.status(401).json({ message: 'Not a valid test submition' });
+    }
+
+    // check if the totalQuestionsCount contains a valid value or not.
+    if (
+      !totalQuestionsCount ||
+      totalQuestionsCount < 0 ||
+      totalQuestionsCount < correctAnswerCount
+    ) {
+      return res.status(401).json({ message: 'Not a valid test submition' });
+    }
+
+    // check if the correctAnswerCount contains a valid value or not.
+    if (
+      correctAnswerCount < 0 ||
+      (!correctAnswerCount && correctAnswerCount != 0)
+    ) {
+      return res.status(401).json({ message: 'Not a valid test submition' });
+    }
+
+    const history: IQuizHistorySubmit = {
+      topic,
+      totalQuestionsCount,
+      correctAnswerCount,
+      userId,
+    };
+
+    try {
+      const response = await quizServices.submitQuiz(history);
+      return res
+        .status(200)
+        .json({ message: 'quiz history added', data: response._id });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });

@@ -13,5 +13,10 @@ router.post(
 );
 
 router.get('', cors(corsOptionForCredentials), quizController.getQuizQuestion);
-
+router.post(
+  '/submit',
+  cors(corsOptionForCredentials),
+  isUserAuth,
+  quizController.submitQuiz,
+);
 export default router;
