@@ -6,8 +6,6 @@ import decodeToken from '../utils/token/decodeToken';
 const isUserAuth = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies['token'];
 
-  console.log(token);
-
   if (!token) {
     return res.status(401).json({ message: 'User not LoggedIn' });
   }

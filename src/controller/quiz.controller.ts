@@ -72,22 +72,18 @@ const quizController = {
     }
   },
 
-  getQuizQuestion: async (
-    req: TypeRequestBody<{
-      topic: string;
-      count: string;
-    }>,
-    res: Response,
-  ) => {
-    const { topic } = req.body;
-    let count = parseInt(req.body.count);
+  getQuizQuestion: async (req: Request, res: Response) => {
+    const topic = req.query['topic'] as string;
+
+    // set default count;
+    let count = 5;
+    if (req.query['count']) {
+      count = parseInt(req.query['count'] as string);
+    }
 
     if (!topic) {
       return res.status(404).json({ message: 'No such quiz found' });
     }
-
-    // set default count;
-    if (!count) count = 5;
 
     try {
       const questions = await quizServices.getQuizQuestion(topic, count);
