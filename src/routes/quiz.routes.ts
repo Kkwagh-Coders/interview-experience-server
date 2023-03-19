@@ -5,6 +5,7 @@ import isUserAuth from '../middleware/isUserAuth';
 import quizController from '../controller/quiz.controller';
 const router = Router();
 
+router.options('', cors(corsOptionForCredentials));
 router.post(
   '',
   cors(corsOptionForCredentials),
@@ -12,8 +13,10 @@ router.post(
   quizController.createQuestion,
 );
 
+router.options('', cors(corsOptionForCredentials));
 router.get('', cors(corsOptionForCredentials), quizController.getQuizQuestion);
 
+router.options('/submit', cors(corsOptionForCredentials));
 router.post(
   '/submit',
   cors(corsOptionForCredentials),
@@ -21,6 +24,7 @@ router.post(
   quizController.submitQuiz,
 );
 
+router.options('/streak', cors(corsOptionForCredentials));
 router.get(
   '/streak',
   cors(corsOptionForCredentials),
