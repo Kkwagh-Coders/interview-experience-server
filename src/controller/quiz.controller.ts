@@ -9,7 +9,7 @@ const quizController = {
     req: TypeRequestBody<{
       question: string;
       topic: string;
-      difficulty: string;
+      difficulty: number;
       answer: string;
       wrongOption1: string;
       wrongOption2: string;
@@ -95,6 +95,11 @@ const quizController = {
 
     try {
       const questions = await quizServices.getQuizQuestion(topic, count);
+
+      if (questions.length == 0) {
+        return res.status(404).json({ message: 'No such quiz found' });
+      }
+
       return res
         .status(200)
         .json({ message: 'questions fetch successfully', data: questions });

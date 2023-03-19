@@ -5,7 +5,7 @@ import { IQuiz } from '../types/quiz.types';
 const quizSchema = new Schema<IQuiz>({
   question: { type: String, required: true },
   topic: { type: String, required: true },
-  difficulty: { type: String, required: true },
+  difficulty: { type: Number, required: true },
   answer: { type: String, required: true },
   wrongOption1: { type: String, required: true },
   wrongOption2: { type: String, required: true },
