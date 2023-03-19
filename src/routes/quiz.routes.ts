@@ -13,10 +13,19 @@ router.post(
 );
 
 router.get('', cors(corsOptionForCredentials), quizController.getQuizQuestion);
+
 router.post(
   '/submit',
   cors(corsOptionForCredentials),
   isUserAuth,
   quizController.submitQuiz,
 );
+
+router.get(
+  '/streak',
+  cors(corsOptionForCredentials),
+  isUserAuth,
+  quizController.getStreak,
+);
+
 export default router;

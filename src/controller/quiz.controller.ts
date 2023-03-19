@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import quizServices from '../services/quiz.service';
 import { IQuiz, IQuizHistorySubmit } from '../types/quiz.types';
 import { TypeRequestBody } from '../types/request.types';
@@ -35,13 +35,18 @@ const quizController = {
     if (
       !question ||
       !topic ||
-      !difficulty ||
       !answer ||
       !wrongOption1 ||
       !wrongOption2 ||
       !wrongOption3 ||
       !detailedSolution
     ) {
+      return res
+        .status(401)
+        .json({ message: 'Please enter all required fields ' });
+    }
+
+    if (!difficulty || difficulty <= 0 || difficulty > 10) {
       return res
         .status(401)
         .json({ message: 'Please enter all required fields ' });
@@ -154,6 +159,50 @@ const quizController = {
       return res
         .status(200)
         .json({ message: 'quiz history added', data: response._id });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
+
+  getStreak: async (
+    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
+    res: Response,
+  ) => {
+    const userId = req.body.authTokenData.id.toString();
+    try {
+      const quizSubmitDates = await quizServices.getQuizHistoryDates(userId);
+      console.log(quizSubmitDates);
+      const temp = new Date();
+      const currentDate = new Date(
+        `${temp.getFullYear()}/${temp.getMonth() + 1}/${temp.getDate()} GMT`,
+      );
+
+      console.log(currentDate);
+      if (
+        currentDate.getTime() - quizSubmitDates[0].getTime() >=
+        86400000 * 2
+      ) {
+        return res
+          .status(200)
+          .json({ message: 'streak fetched successfully', streakCount: 0 });
+      }
+
+      let streakCount = 1;
+      for (let i = 1; i < quizSubmitDates.length; i++) {
+        if (
+          quizSubmitDates[i - 1].getTime() - quizSubmitDates[i].getTime() >=
+          86400000 * 2
+        ) {
+          break;
+        }
+        streakCount++;
+      }
+      return res.status(200).json({
+        message: 'streak fetched successfully',
+        data: quizSubmitDates,
+        streakCount,
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });

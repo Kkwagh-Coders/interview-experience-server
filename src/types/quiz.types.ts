@@ -14,7 +14,7 @@ export interface IQuizHistory {
   userId: Types.ObjectId;
   correctAnswerCount: number;
   totalQuestionsCount: number;
-  date: Date;
+  quizSubmitDate: Date;
   topic: string;
 }
 

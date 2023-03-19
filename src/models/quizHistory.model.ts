@@ -5,7 +5,7 @@ const quizHistorySchema = new Schema<IQuizHistory>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   correctAnswerCount: { type: Number, required: true },
   totalQuestionsCount: { type: Number, required: true },
-  date: { type: Date, default: Date.now },
+  quizSubmitDate: { type: Date, default: Date.now },
   topic: { type: String, required: true },
 });
 
