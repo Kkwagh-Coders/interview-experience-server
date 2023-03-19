@@ -30,12 +30,7 @@ router.post(
   quizController.submitQuiz,
 );
 
-router.options('/streak', cors(corsOptionForCredentials));
-router.get(
-  '/streak',
-  cors(corsOptionForCredentials),
-  isUserAuth,
-  quizController.getStreak,
-);
+router.options('/streak', cors());
+router.get('/streak', cors(), quizController.getStreak);
 
 export default router;

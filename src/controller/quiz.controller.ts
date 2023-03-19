@@ -3,6 +3,7 @@ import quizServices from '../services/quiz.service';
 import { IQuiz, IQuizHistorySubmit } from '../types/quiz.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
+import { Types } from 'mongoose';
 
 const quizController = {
   createQuestion: async (
@@ -152,11 +153,13 @@ const quizController = {
     }
   },
 
-  getStreak: async (
-    req: TypeRequestBody<{ authTokenData: IAuthToken }>,
-    res: Response,
-  ) => {
-    const userId = req.body.authTokenData.id.toString();
+  getStreak: async (req: Request, res: Response) => {
+    const userId = req.query['userId'] as string;
+
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      return res.status(401).json({ message: 'No such user found!!' });
+    }
+
     try {
       const quizSubmitDates = await quizServices.getQuizHistoryDates(userId);
       console.log(quizSubmitDates);
