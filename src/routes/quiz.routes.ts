@@ -12,4 +12,6 @@ router.post(
   quizController.createQuestion,
 );
 
+router.get('', cors(corsOptionForCredentials), quizController.getQuizQuestion);
+
 export default router;

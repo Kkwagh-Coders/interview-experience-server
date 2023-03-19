@@ -75,6 +75,34 @@ const quizController = {
       return res.status(500).json({ message: 'Something went wrong.....' });
     }
   },
+
+  getQuizQuestion: async (
+    req: TypeRequestBody<{
+      topic: string;
+      count: string;
+    }>,
+    res: Response,
+  ) => {
+    const { topic } = req.body;
+    let count = parseInt(req.body.count);
+
+    if (!topic) {
+      return res.status(404).json({ message: 'No such quiz found' });
+    }
+
+    // set default count;
+    if (!count) count = 5;
+
+    try {
+      const questions = await quizServices.getQuizQuestion(topic, count);
+      return res
+        .status(200)
+        .json({ message: 'questions fetch successfully', data: questions });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
 };
 
 export default quizController;
