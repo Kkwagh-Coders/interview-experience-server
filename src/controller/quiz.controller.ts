@@ -187,7 +187,6 @@ const quizController = {
       }
       return res.status(200).json({
         message: 'streak fetched successfully',
-        data: quizSubmitDates,
         streakCount,
       });
     } catch (error) {
