@@ -15,7 +15,6 @@ const quizController = {
       wrongOption2: string;
       wrongOption3: string;
       detailedSolution: string;
-      authTokenData: IAuthToken;
     }>,
     res: Response,
   ) => {
@@ -29,7 +28,6 @@ const quizController = {
       wrongOption2,
       wrongOption3,
       detailedSolution,
-      authTokenData,
     } = req.body;
 
     if (
@@ -50,13 +48,6 @@ const quizController = {
       return res
         .status(401)
         .json({ message: 'Please enter all required fields ' });
-    }
-
-    // if not admin
-    if (!authTokenData.isAdmin) {
-      return res
-        .status(403)
-        .json({ message: 'Only admin can create a question' });
     }
 
     const data: IQuiz = {
