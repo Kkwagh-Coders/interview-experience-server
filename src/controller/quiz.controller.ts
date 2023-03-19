@@ -162,13 +162,18 @@ const quizController = {
 
     try {
       const quizSubmitDates = await quizServices.getQuizHistoryDates(userId);
-      console.log(quizSubmitDates);
+
+      if (quizSubmitDates.length === 0) {
+        return res
+          .status(200)
+          .json({ message: 'streak fetched successfully', streakCount: 0 });
+      }
+
       const temp = new Date();
       const currentDate = new Date(
         `${temp.getFullYear()}/${temp.getMonth() + 1}/${temp.getDate()} GMT`,
       );
 
-      console.log(currentDate);
       if (
         currentDate.getTime() - quizSubmitDates[0].getTime() >=
         86400000 * 2
