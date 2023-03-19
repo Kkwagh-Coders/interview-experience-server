@@ -64,7 +64,7 @@ const quizController = {
     try {
       const question = await quizServices.createQuizQuestion(data);
       return res
-        .status(404)
+        .status(200)
         .json({ message: 'Question created successfully', data: question._id });
     } catch (error) {
       console.log(error);
