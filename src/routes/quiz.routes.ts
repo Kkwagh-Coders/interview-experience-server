@@ -11,3 +11,5 @@ router.post(
   isUserAuth,
   quizController.createQuestion,
 );
+
+export default router;

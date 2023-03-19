@@ -18,6 +18,7 @@ app.use(cookieParser());
 app.use('/user', routes.userRoutes);
 app.use('/posts', routes.postRoutes);
 app.use('/comments', routes.commentRoutes);
+app.use('/quiz', routes.quizRoutes);
 
 // Home Route
 app.get('/', cors(), async (req, res) => {
