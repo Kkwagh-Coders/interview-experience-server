@@ -95,7 +95,7 @@ const quizController = {
 
       return res
         .status(200)
-        .json({ message: 'questions fetch successfully', data: questions });
+        .json({ message: 'questions fetched successfully', data: questions });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
@@ -115,7 +115,7 @@ const quizController = {
     const userId = req.body.authTokenData.id;
 
     if (!topic) {
-      return res.status(401).json({ message: 'Not a valid test submition' });
+      return res.status(401).json({ message: 'Not a valid test submission' });
     }
 
     // check if the totalQuestionsCount contains a valid value or not.
@@ -124,7 +124,7 @@ const quizController = {
       totalQuestionsCount < 0 ||
       totalQuestionsCount < correctAnswerCount
     ) {
-      return res.status(401).json({ message: 'Not a valid test submition' });
+      return res.status(401).json({ message: 'Not a valid test submission' });
     }
 
     // check if the correctAnswerCount contains a valid value or not.
@@ -132,7 +132,7 @@ const quizController = {
       correctAnswerCount < 0 ||
       (!correctAnswerCount && correctAnswerCount != 0)
     ) {
-      return res.status(401).json({ message: 'Not a valid test submition' });
+      return res.status(401).json({ message: 'Not a valid test submission' });
     }
 
     const history: IQuizHistorySubmit = {
@@ -155,7 +155,6 @@ const quizController = {
 
   getStreak: async (req: Request, res: Response) => {
     const userId = req.query['userId'] as string;
-
     if (!userId || !Types.ObjectId.isValid(userId)) {
       return res.status(401).json({ message: 'No such user found!!' });
     }
