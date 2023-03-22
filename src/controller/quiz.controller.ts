@@ -165,13 +165,16 @@ const quizController = {
       return res.status(401).json({ message: 'No such user found!!' });
     }
 
+    let dailyQuizDone = false;
     try {
       const quizSubmitDates = await quizServices.getQuizHistoryDates(userId);
 
       if (quizSubmitDates.length === 0) {
-        return res
-          .status(200)
-          .json({ message: 'streak fetched successfully', streakCount: 0 });
+        return res.status(200).json({
+          message: 'streak fetched successfully',
+          streakCount: 0,
+          dailyQuizDone,
+        });
       }
 
       const temp = new Date();
@@ -179,16 +182,20 @@ const quizController = {
         `${temp.getFullYear()}/${temp.getMonth() + 1}/${temp.getDate()} GMT`,
       );
 
+      // checks if current day's quiz is done or not
       if (
         currentDate.getTime() - quizSubmitDates[0].getTime() >=
         86400000 * 2
       ) {
-        return res
-          .status(200)
-          .json({ message: 'streak fetched successfully', streakCount: 0 });
+        return res.status(200).json({
+          message: 'streak fetched successfully',
+          streakCount: 0,
+          dailyQuizDone,
+        });
       }
 
       let streakCount = 1;
+      dailyQuizDone = true;
       for (let i = 1; i < quizSubmitDates.length; i++) {
         if (
           quizSubmitDates[i - 1].getTime() - quizSubmitDates[i].getTime() >=
@@ -198,9 +205,11 @@ const quizController = {
         }
         streakCount++;
       }
+
       return res.status(200).json({
         message: 'streak fetched successfully',
         streakCount,
+        dailyQuizDone,
       });
     } catch (error) {
       console.log(error);
