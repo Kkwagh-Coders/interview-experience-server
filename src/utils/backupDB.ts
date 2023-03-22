@@ -13,10 +13,7 @@ export const backupDatabase = () => {
     `${DB_NAME}${currentDate}.gzip`,
   );
   const DB_URI = process.env['MONGODB_BACKUP_URL'];
-  const args = [
-    `--uri ${DB_URI}`,
-    //   `--archive=${BACKUP_PATH}`, `--gzip`
-  ];
+  const args = [`--uri ${DB_URI}`, `--out ${BACKUP_PATH}`, `--gzip`];
 
   // creating child process
   console.log('Creating child process....');
