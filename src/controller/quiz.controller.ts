@@ -135,6 +135,12 @@ const quizController = {
       return res.status(401).json({ message: 'Not a valid test submission' });
     }
 
+    const result = correctAnswerCount / totalQuestionsCount;
+    if (result < 0.6) {
+      return res
+        .status(412)
+        .json({ message: 'Score must me greater than 60%...' });
+    }
     const history: IQuizHistorySubmit = {
       topic,
       totalQuestionsCount,
