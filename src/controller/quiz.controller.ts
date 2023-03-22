@@ -182,7 +182,7 @@ const quizController = {
         `${temp.getFullYear()}/${temp.getMonth() + 1}/${temp.getDate()} GMT`,
       );
 
-      // checks if current day's quiz is done or not
+      // checks latest quiz date
       if (
         currentDate.getTime() - quizSubmitDates[0].getTime() >=
         86400000 * 2
@@ -194,8 +194,12 @@ const quizController = {
         });
       }
 
+      // check if user has solved any quiz today
+      if (currentDate.toDateString() === quizSubmitDates[0].toDateString()) {
+        dailyQuizDone = true;
+      }
+
       let streakCount = 1;
-      dailyQuizDone = true;
       for (let i = 1; i < quizSubmitDates.length; i++) {
         if (
           quizSubmitDates[i - 1].getTime() - quizSubmitDates[i].getTime() >=
