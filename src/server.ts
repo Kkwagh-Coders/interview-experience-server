@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { connectDB } from './config/database';
-import { backupDatabase } from './utils/backupDB';
+import { backupDatabase } from './config/backupDB';
 
 // Database and Dotenv config
 config();

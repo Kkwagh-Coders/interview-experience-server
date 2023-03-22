@@ -1,19 +1,31 @@
-import { spawn, exec } from 'child_process';
+import { spawn } from 'child_process';
 import path from 'path';
+
+const getBackupFileName = (name: string, extension: string) => {
+  const date = new Date();
+  return `${name}_${date.getFullYear()}-${
+    date.getMonth() + 1
+  }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}.${extension}`;
+};
 
 export const backupDatabase = () => {
   // setting up variables
   console.log('Setting up variables....');
 
   const DB_NAME = process.env['DB_NAME'];
-  const currentDate = Date.now().toString();
+  if (!DB_NAME) {
+    console.log('Please Provide DB Name');
+    return;
+  }
+
   const BACKUP_PATH = path.join(
     __dirname,
     'backup',
-    `${DB_NAME}${currentDate}.gzip`,
+    getBackupFileName(DB_NAME, 'gzip'),
   );
+
   const DB_URI = process.env['MONGODB_BACKUP_URL'];
-  const args = [`--uri ${DB_URI}`, `--out ${BACKUP_PATH}`, `--gzip`];
+  const args = [`--uri=${DB_URI}`, `--out=${BACKUP_PATH}`, `--gzip`];
 
   // creating child process
   console.log('Creating child process....');
@@ -27,7 +39,7 @@ export const backupDatabase = () => {
   });
 
   child.stderr.on('data', (data: Buffer) => {
-    console.log('output error on terminal: \n', data);
+    console.log('output error on terminal: \n', data.toString());
   });
 
   child.on('error', (error) => {
@@ -37,7 +49,8 @@ export const backupDatabase = () => {
   child.on('exit', (code, signal) => {
     if (code) console.log(' Process exited with code :', code);
     else if (signal) console.log(' Process killed with :', signal);
-    else console.log('Backup successfull at ', currentDate);
+    else console.log('Backup successful');
   });
+
   console.log('End....');
 };
