@@ -9,6 +9,8 @@ declare global {
       MAIL_PASSWORD: string;
       CLIENT_BASE_URL: string;
       SERVER_BASE_URL: string;
+      MONGODB_BACKUP_URL: string;
+      DB_NAME: string;
     }
   }
 }
