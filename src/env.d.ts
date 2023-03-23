@@ -11,6 +11,7 @@ declare global {
       SERVER_BASE_URL: string;
       MONGODB_BACKUP_URL: string;
       DB_NAME: string;
+      BACKUP_TIME: string;
     }
   }
 }

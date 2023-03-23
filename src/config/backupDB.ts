@@ -34,14 +34,17 @@ export const backupDatabase = () => {
 
   // setting up handlers
   console.log('Setting up handlers....');
+  // outputs console data of child process
   child.stdout.on('data', (data: Buffer) => {
     console.log('output on terminal : \n', data);
   });
 
+  // outputs console error on child process
   child.stderr.on('data', (data: Buffer) => {
     console.log('output error on terminal: \n', data.toString());
   });
 
+  // outputs the error of node.js file
   child.on('error', (error) => {
     console.log('error: \n', error);
   });
