@@ -135,6 +135,12 @@ const quizController = {
       return res.status(401).json({ message: 'Not a valid test submission' });
     }
 
+    const result = correctAnswerCount / totalQuestionsCount;
+    if (result < 0.6) {
+      return res
+        .status(412)
+        .json({ message: 'Score must me greater than 60%...' });
+    }
     const history: IQuizHistorySubmit = {
       topic,
       totalQuestionsCount,
@@ -159,13 +165,16 @@ const quizController = {
       return res.status(401).json({ message: 'No such user found!!' });
     }
 
+    let dailyQuizDone = false;
     try {
       const quizSubmitDates = await quizServices.getQuizHistoryDates(userId);
 
       if (quizSubmitDates.length === 0) {
-        return res
-          .status(200)
-          .json({ message: 'streak fetched successfully', streakCount: 0 });
+        return res.status(200).json({
+          message: 'streak fetched successfully',
+          streakCount: 0,
+          dailyQuizDone,
+        });
       }
 
       const temp = new Date();
@@ -173,13 +182,21 @@ const quizController = {
         `${temp.getFullYear()}/${temp.getMonth() + 1}/${temp.getDate()} GMT`,
       );
 
+      // checks latest quiz date
       if (
         currentDate.getTime() - quizSubmitDates[0].getTime() >=
         86400000 * 2
       ) {
-        return res
-          .status(200)
-          .json({ message: 'streak fetched successfully', streakCount: 0 });
+        return res.status(200).json({
+          message: 'streak fetched successfully',
+          streakCount: 0,
+          dailyQuizDone,
+        });
+      }
+
+      // check if user has solved any quiz today
+      if (currentDate.toDateString() === quizSubmitDates[0].toDateString()) {
+        dailyQuizDone = true;
       }
 
       let streakCount = 1;
@@ -192,9 +209,11 @@ const quizController = {
         }
         streakCount++;
       }
+
       return res.status(200).json({
         message: 'streak fetched successfully',
         streakCount,
+        dailyQuizDone,
       });
     } catch (error) {
       console.log(error);
