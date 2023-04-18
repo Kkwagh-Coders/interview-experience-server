@@ -152,7 +152,7 @@ const quizController = {
       const response = await quizServices.submitQuiz(history);
       return res
         .status(200)
-        .json({ message: 'quiz history added', data: response._id });
+        .json({ message: 'Quiz submitted successfully', data: response._id });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Something went wrong.....' });
