@@ -306,7 +306,7 @@ const userController = {
       const CLIENT_BASE_URL = process.env['CLIENT_BASE_URL'];
 
       if (!CLIENT_BASE_URL) return res.redirect('/');
-      return res.redirect(CLIENT_BASE_URL);
+      return res.redirect(`${CLIENT_BASE_URL}/login`);
     } catch (error) {
       // Send a simple html to user if error
       res.setHeader('Content-type', 'text/html');
