@@ -1,7 +1,9 @@
-
 # Interview Experience
 
 A Node Typescript Project API for sharing Interview Experience with the whole college
+
+- Live Website: [https://official-interview-experience.netlify.app/](https://official-interview-experience.netlify.app/)
+- Client Code: [https://github.com/Kkwagh-Coders/interview-experience-client](https://github.com/Kkwagh-Coders/interview-experience-client)
 
 ## Tech Stack
 
@@ -13,7 +15,7 @@ A Node Typescript Project API for sharing Interview Experience with the whole co
 - Eslint
 - Prettier
 
-## Suggested VsCode Pluggins
+## Suggested VsCode Plugins
 
 - Eslint
 - Prettier
