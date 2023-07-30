@@ -1,14 +1,14 @@
 import cron from 'node-cron';
-import ping from 'ping';
+import axios from 'axios';
 
-const pingServer = (SERVER_BASE_URL: string) => {
-  ping.promise
-    .probe(SERVER_BASE_URL)
-    .then((res) => console.log('Result: ', res))
+const makeRequestToServer = (SERVER_BASE_URL: string) => {
+  axios
+    .get(SERVER_BASE_URL)
+    .then((res) => console.log('Result: ', res.status))
     .catch((err) => {
+      console.error('Error: ', err.status);
       // Recursively ping if failed
-      pingServer(SERVER_BASE_URL);
-      console.error('Error: ', err);
+      makeRequestToServer(SERVER_BASE_URL);
     });
 };
 
@@ -23,7 +23,7 @@ const preventServerSleep = () => {
   // Ping the server
   cron.schedule('*/10 * * * *', () => {
     // Making a request to itself or the server
-    pingServer(SERVER_BASE_URL);
+    makeRequestToServer(SERVER_BASE_URL);
   });
 };
 

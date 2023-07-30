@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -31,8 +32,7 @@
     "nodemailer": "^6.9.1",
     "nodemailer-express-handlebars": "^6.0.0",
     "nodemon": "^2.0.20",
-    "path": "^0.12.7",
-    "ping": "^0.4.4"
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
