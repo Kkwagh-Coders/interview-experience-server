@@ -27,10 +27,12 @@
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^4.13.0",
     "mongoose": "^6.9.0",
+    "node-cron": "^3.0.2",
     "nodemailer": "^6.9.1",
     "nodemailer-express-handlebars": "^6.0.0",
     "nodemon": "^2.0.20",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "ping": "^0.4.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
@@ -41,8 +43,10 @@
     "@types/html-to-text": "^9.0.0",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.11.18",
+    "@types/node-cron": "^3.0.8",
     "@types/nodemailer": "^6.4.7",
     "@types/nodemailer-express-handlebars": "^4.0.2",
+    "@types/ping": "^0.4.1",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
     "eslint": "^8.32.0",
