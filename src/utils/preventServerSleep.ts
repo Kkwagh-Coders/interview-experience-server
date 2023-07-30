@@ -1,6 +1,17 @@
 import cron from 'node-cron';
 import ping from 'ping';
 
+const pingServer = (SERVER_BASE_URL: string) => {
+  ping.promise
+    .probe(SERVER_BASE_URL)
+    .then((res) => console.log('Result: ', res))
+    .catch((err) => {
+      // Recursively ping if failed
+      pingServer(SERVER_BASE_URL);
+      console.error('Error: ', err);
+    });
+};
+
 // Background Service
 const preventServerSleep = () => {
   console.log('Scheduling the Task');
@@ -12,7 +23,7 @@ const preventServerSleep = () => {
   // Ping the server
   cron.schedule('*/10 * * * *', () => {
     // Making a request to itself or the server
-    ping.promise.probe(SERVER_BASE_URL);
+    pingServer(SERVER_BASE_URL);
   });
 };
 
