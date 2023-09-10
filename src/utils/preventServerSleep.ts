@@ -20,10 +20,15 @@ const preventServerSleep = () => {
     throw new Error('SERVER_BASE_URL not Defined');
   }
 
+  const FRIEND_SERVER = process.env['FRIEND_SERVER'];
+
   // Ping the server
   cron.schedule('*/10 * * * *', () => {
     // Making a request to itself or the server
     makeRequestToServer(SERVER_BASE_URL);
+    if (FRIEND_SERVER) {
+      makeRequestToServer(FRIEND_SERVER);
+    }
   });
 };
 
