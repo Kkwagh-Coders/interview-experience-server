@@ -6,6 +6,7 @@ config();
 connectDB();
 
 // Importing app after env and database is configured
+import './config/passport';
 import app from './app';
 import preventServerSleep from './utils/preventServerSleep';
 

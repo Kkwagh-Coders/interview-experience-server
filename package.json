@@ -32,6 +32,8 @@
     "nodemailer": "^6.9.1",
     "nodemailer-express-handlebars": "^6.0.0",
     "nodemon": "^2.0.20",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7"
   },
   "devDependencies": {
@@ -46,6 +48,8 @@
     "@types/node-cron": "^3.0.8",
     "@types/nodemailer": "^6.4.7",
     "@types/nodemailer-express-handlebars": "^4.0.2",
+    "@types/passport": "^1.0.12",
+    "@types/passport-google-oauth20": "^2.0.12",
     "@types/ping": "^0.4.1",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",

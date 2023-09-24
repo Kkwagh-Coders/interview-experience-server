@@ -1,5 +1,6 @@
 import cors from 'cors';
 import { Router } from 'express';
+import passport from 'passport';
 import corsOptionForCredentials from '../config/cors';
 import userController from '../controller/user.controller';
 import isUserAuth from '../middleware/isUserAuth';
@@ -72,5 +73,28 @@ router.get(
   cors(corsOptionForCredentials),
   userController.searchUser,
 );
+
+// User Routes for Google Auth
+router.options('/auth/google', cors(corsOptionForCredentials));
+router.get(
+  '/auth/google',
+  passport.authenticate('google', { scope: ['profile'] }),
+);
+
+router.options('/auth/google/callback', cors(corsOptionForCredentials));
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/user/auth/google/failed',
+    session: false,
+  }),
+  userController.googleLogin,
+);
+
+// Route to handle for google error
+router.options('/auth/google/failed', cors(corsOptionForCredentials));
+router.get('/auth/google/failed', (req, res) => {
+  return res.status(401).json({ message: 'Login Failure' });
+});
 
 export default router;

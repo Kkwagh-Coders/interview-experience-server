@@ -514,6 +514,34 @@ const userController = {
       return res.status(500).json({ message: 'something went wrong...' });
     }
   },
+  googleLogin: async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.send('ERROR with Google Login');
+    }
+
+    const userData = req.user as IUser;
+    const email = userData.email;
+    const user = await userServices.findUser(email);
+
+    if (!user) {
+      return res.send('ERROR with Google Login');
+    }
+
+    // generate JWT token
+    const token = generateAuthToken(user._id, email, user.isAdmin);
+
+    //setting cookie
+    res.cookie('token', token, {
+      sameSite: process.env['NODE_ENV'] === 'production' ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
+      secure: process.env['NODE_ENV'] === 'production', // must be true if sameSite='none',
+      httpOnly: true,
+      maxAge: 1 * (24 * 60 * 60 * 1000),
+    });
+
+    // Successful authentication, redirect home.
+    const clientURL = process.env['CLIENT_BASE_URL'] || 'http://localhost:3000';
+    return res.redirect(clientURL);
+  },
 };
 
 export default userController;
