@@ -539,6 +539,12 @@ const userController = {
     const clientURL = process.env['CLIENT_BASE_URL'] || 'http://localhost:3000';
     return res.redirect(clientURL);
   },
+  setToken: (req: Request, res: Response) => {
+    const token = req.params['token'];
+    res.cookie('token', token, cookieOptions);
+
+    return res.status(200).json({ message: 'Token set successfully' });
+  },
 };
 
 export default userController;
