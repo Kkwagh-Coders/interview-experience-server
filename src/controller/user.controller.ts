@@ -533,11 +533,11 @@ const userController = {
     const token = generateAuthToken(user._id, email, user.isAdmin);
 
     //setting cookie
-    res.cookie('token', token, cookieOptions);
+    // res.cookie('token', token, cookieOptions);
 
     // Successful authentication, redirect home.
     const clientURL = process.env['CLIENT_BASE_URL'] || 'http://localhost:3000';
-    return res.redirect(clientURL);
+    return res.redirect(`${clientURL}/token/google/${token}`);
   },
   setToken: (req: Request, res: Response) => {
     const token = req.params['token'];
