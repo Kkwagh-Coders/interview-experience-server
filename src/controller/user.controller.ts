@@ -24,6 +24,7 @@ type COOKIE_OPTIONS = {
   secure: boolean;
   httpOnly: boolean;
   maxAge: number;
+  path: string;
 };
 
 const cookieOptions: COOKIE_OPTIONS = {
@@ -31,6 +32,7 @@ const cookieOptions: COOKIE_OPTIONS = {
   secure: process.env['NODE_ENV'] === 'production', // must be true if sameSite='none',
   httpOnly: true,
   maxAge: EXPIRY_DAYS * (24 * 60 * 60 * 1000),
+  path: '/',
 };
 
 const userController = {
@@ -531,12 +533,7 @@ const userController = {
     const token = generateAuthToken(user._id, email, user.isAdmin);
 
     //setting cookie
-    res.cookie('token', token, {
-      sameSite: process.env['NODE_ENV'] === 'production' ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
-      secure: process.env['NODE_ENV'] === 'production', // must be true if sameSite='none',
-      httpOnly: true,
-      maxAge: 1 * (24 * 60 * 60 * 1000),
-    });
+    res.cookie('token', token, cookieOptions);
 
     // Successful authentication, redirect home.
     const clientURL = process.env['CLIENT_BASE_URL'] || 'http://localhost:3000';
