@@ -1,7 +1,7 @@
+import { randomUUID } from 'crypto';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import userServices from '../services/user.service';
-import { randomUUID } from 'crypto';
 
 const GOOGLE_CLIENT_ID = process.env['GOOGLE_CLIENT_ID'];
 const GOOGLE_CLIENT_SECRET = process.env['GOOGLE_CLIENT_SECRET'];
@@ -39,7 +39,7 @@ passport.use(
           email: userEmail,
           password: randomUUID(),
           isAdmin: false,
-          isEmailVerified: false,
+          isEmailVerified: true,
           branch: 'NA',
           passingYear: 'NA',
           designation: 'NA',
