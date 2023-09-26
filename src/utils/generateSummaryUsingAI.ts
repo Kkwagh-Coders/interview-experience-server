@@ -9,7 +9,6 @@ const generateSummaryUsingAI = async (content: string) => {
     headers: {
       Authorization: `Bearer ${process.env['AI_API_TOKEN_HUGGING_FACE']}`,
     },
-    timeout: 2 * 1000,
   });
 
   return response.data[0].summary_text;
