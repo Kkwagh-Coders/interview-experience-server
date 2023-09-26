@@ -5,6 +5,7 @@ import { IComment } from './comment.types';
 export interface IPost {
   title: string;
   content: string;
+  summary: string;
   userId: Types.ObjectId;
   company: string;
   role: string;
@@ -25,6 +26,7 @@ export interface IPost {
 export interface IPostForm {
   title: string;
   content: string;
+  summary: string;
   userId: Types.ObjectId;
   company: string;
   role: string;
@@ -39,6 +41,7 @@ export interface IPostForm {
 export interface IPostDisplay {
   title: string;
   content: string;
+  summary: string;
   userId: {
     _id: Types.ObjectId;
     username: string;
@@ -62,6 +65,7 @@ export interface IPostDisplay {
 export interface IPostList {
   title: string;
   content: string;
+  summary: string;
   userId: {
     _id: Types.ObjectId;
     username: string;

@@ -1,6 +1,6 @@
 import mongoose, { Schema, Types } from 'mongoose';
-import { IPost } from '../types/post.types';
 import { IComment } from '../types/comment.types';
+import { IPost } from '../types/post.types';
 import { IReply } from '../types/reply.types';
 
 const replySchema = new Schema<IReply>({
@@ -19,6 +19,7 @@ const commentSchema = new Schema<IComment>({
 const postSchema = new Schema<IPost>({
   title: { type: String, required: true },
   content: { type: String, required: true },
+  summary: { type: String, required: true, default: '' },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   company: { type: String, required: true },
   role: { type: String, required: true },

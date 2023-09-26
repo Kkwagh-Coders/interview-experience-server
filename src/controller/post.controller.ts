@@ -5,7 +5,7 @@ import postServices from '../services/post.service';
 import { IPostFilter, IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
-import generateTextFromHTML from '../utils/generateTextFromHTML';
+import generateSummaryFromHTMLContent from '../utils/generateSummaryFromHTMLContent';
 
 const postController = {
   // TODO: finalize function names
@@ -86,31 +86,27 @@ const postController = {
       }
 
       // Resolving the list of posts
-      const response = await Promise.all(
-        posts.map(async (post) => {
-          const { content, upVotes, downVotes, bookmarks } = post;
-          const textContent = await generateTextFromHTML(content);
+      const response = posts.map((post) => {
+        const { upVotes, downVotes, bookmarks } = post;
 
-          const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
-          const isDownVoted =
-            !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
-          const isBookmarked = bookmarks.some(
-            (id) => userId && id.equals(userId),
-          );
+        const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
+        const isDownVoted =
+          !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
+        const isBookmarked = bookmarks.some(
+          (id) => userId && id.equals(userId),
+        );
 
-          return {
-            ...post,
-            content: textContent,
-            isUpVoted,
-            isDownVoted,
-            isBookmarked,
-            votes: upVotes.length - downVotes.length,
-            upVotes: undefined,
-            downVotes: undefined,
-            bookmarks: undefined,
-          };
-        }),
-      );
+        return {
+          ...post,
+          isUpVoted,
+          isDownVoted,
+          isBookmarked,
+          votes: upVotes.length - downVotes.length,
+          upVotes: undefined,
+          downVotes: undefined,
+          bookmarks: undefined,
+        };
+      });
 
       // as frontend is 1 based page index
       const nextPage = page + 2;
@@ -247,11 +243,8 @@ const postController = {
           (id) => reqUserId && id.equals(reqUserId),
         );
 
-        const textContent = generateTextFromHTML(post.content);
-
         return {
           ...post,
-          content: textContent,
           isUpVoted,
           isDownVoted,
           isBookmarked,
@@ -322,11 +315,9 @@ const postController = {
         const isDownVoted =
           !isUpVoted && downVotes.some((id) => id == reqUserId);
         const isBookmarked = bookmarks.some((id) => id == reqUserId);
-        const textContent = generateTextFromHTML(post.content);
 
         return {
           ...post,
-          content: textContent,
           isUpVoted,
           isDownVoted,
           isBookmarked,
@@ -336,8 +327,10 @@ const postController = {
           bookmarks: undefined,
         };
       });
+
       // as frontend is 1 based page index
       const nextPage = page + 2;
+
       // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
       const previousPage = page === 0 ? undefined : page;
       return res.status(200).json({
@@ -397,9 +390,13 @@ const postController = {
         .json({ message: 'Please enter all required fields ' });
     }
 
+    // Generating summary
+    const summary = await generateSummaryFromHTMLContent(content);
+
     const postData: IPostForm = {
       title,
       content,
+      summary,
       company,
       role,
       postType,
@@ -629,6 +626,7 @@ const postController = {
       postId?: string;
       title?: string;
       content?: string;
+      summary?: string;
       company?: string;
       role?: string;
       postType?: string;
@@ -645,6 +643,7 @@ const postController = {
       postId,
       title,
       content,
+      summary,
       company,
       role,
       postType,
@@ -663,6 +662,7 @@ const postController = {
     if (
       !title ||
       !content ||
+      !summary ||
       !company ||
       !role ||
       !postType ||
@@ -680,6 +680,7 @@ const postController = {
     const editedPostData: IPostForm = {
       title,
       content,
+      summary,
       company,
       role,
       postType,
