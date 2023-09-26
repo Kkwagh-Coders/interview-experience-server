@@ -11,6 +11,7 @@ declare global {
       SERVER_BASE_URL: string;
       GOOGLE_CLIENT_ID: string;
       GOOGLE_CLIENT_SECRET: string;
+      AI_API_TOKEN_HUGGING_FACE: string;
     }
   }
 }

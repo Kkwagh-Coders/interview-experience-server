@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { DeleteResult } from 'mongodb';
+import mongoose, { Types } from 'mongoose';
+import postServices from '../services/post.service';
+import { IPostFilter, IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
-import postServices from '../services/post.service';
-import mongoose, { Types } from 'mongoose';
-import { IPostFilter, IPostForm } from '../types/post.types';
+import generateSummaryFromHTMLContent from '../utils/generateSummaryFromHTMLContent';
 import generateTextFromHTML from '../utils/generateTextFromHTML';
 
 const postController = {
@@ -85,28 +86,32 @@ const postController = {
         });
       }
 
-      const response = posts.map((post) => {
-        const { content, upVotes, downVotes, bookmarks } = post;
-        const textContent = generateTextFromHTML(content);
-        const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
-        const isDownVoted =
-          !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
-        const isBookmarked = bookmarks.some(
-          (id) => userId && id.equals(userId),
-        );
+      // Resolving the list of posts
+      const response = await Promise.all(
+        posts.map(async (post) => {
+          const { content, upVotes, downVotes, bookmarks } = post;
+          const textContent = await generateSummaryFromHTMLContent(content);
 
-        return {
-          ...post,
-          content: textContent,
-          isUpVoted,
-          isDownVoted,
-          isBookmarked,
-          votes: upVotes.length - downVotes.length,
-          upVotes: undefined,
-          downVotes: undefined,
-          bookmarks: undefined,
-        };
-      });
+          const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
+          const isDownVoted =
+            !isUpVoted && downVotes.some((id) => userId && id.equals(userId));
+          const isBookmarked = bookmarks.some(
+            (id) => userId && id.equals(userId),
+          );
+
+          return {
+            ...post,
+            content: textContent,
+            isUpVoted,
+            isDownVoted,
+            isBookmarked,
+            votes: upVotes.length - downVotes.length,
+            upVotes: undefined,
+            downVotes: undefined,
+            bookmarks: undefined,
+          };
+        }),
+      );
 
       // as frontend is 1 based page index
       const nextPage = page + 2;
