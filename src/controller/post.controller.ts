@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { DeleteResult } from 'mongodb';
 import mongoose, { Types } from 'mongoose';
 import postServices from '../services/post.service';
+import userServices from '../services/user.service';
 import { IPostFilter, IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
@@ -692,7 +693,13 @@ const postController = {
     };
 
     try {
-      const post = await postServices.editPost(postId, userId, editedPostData);
+      const user = await userServices.findUserById(userId);
+      const post = await postServices.editPost(
+        postId,
+        userId,
+        editedPostData,
+        user?.isAdmin,
+      );
 
       if (!post) {
         console.log('Not acknowledged while editing the post');

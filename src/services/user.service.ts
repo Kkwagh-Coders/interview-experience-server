@@ -4,6 +4,10 @@ import UserModel from '../models/user.model';
 import { IUser, IUserProfile } from '../types/user.types';
 
 const userServices = {
+  findUserById: (id: Types.ObjectId) => {
+    return UserModel.findOne({ _id: id });
+  },
+
   findUser: (email: string) => {
     return UserModel.findOne({ email });
   },

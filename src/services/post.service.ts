@@ -1,12 +1,11 @@
+import { Aggregate, Types } from 'mongoose';
 import postModel from '../models/post.model';
 import {
-  IPostForm,
   IPostDisplay,
-  IPostList,
   IPostFilter,
-  // IPostSort,
+  IPostForm,
+  IPostList,
 } from '../types/post.types';
-import { Aggregate, Types } from 'mongoose';
 
 const postServices = {
   createPost: (post: IPostForm) => {
@@ -149,8 +148,16 @@ const postServices = {
     postId: string,
     userId: Types.ObjectId,
     editedPostData: IPostForm,
+    isEditorAdmin = false,
   ) => {
-    const filter = { _id: postId, userId };
+    let filter: { _id: string } | { _id: string; userId: Types.ObjectId } = {
+      _id: postId,
+    };
+
+    if (!isEditorAdmin) {
+      filter = { _id: postId, userId };
+    }
+
     const update = {
       title: editedPostData.title,
       content: editedPostData.content,
