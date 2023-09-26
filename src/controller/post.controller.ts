@@ -5,7 +5,6 @@ import postServices from '../services/post.service';
 import { IPostFilter, IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
-import generateSummaryFromHTMLContent from '../utils/generateSummaryFromHTMLContent';
 import generateTextFromHTML from '../utils/generateTextFromHTML';
 
 const postController = {
@@ -90,7 +89,7 @@ const postController = {
       const response = await Promise.all(
         posts.map(async (post) => {
           const { content, upVotes, downVotes, bookmarks } = post;
-          const textContent = await generateSummaryFromHTMLContent(content);
+          const textContent = await generateTextFromHTML(content);
 
           const isUpVoted = upVotes.some((id) => userId && id.equals(userId));
           const isDownVoted =
