@@ -162,6 +162,7 @@ const postController = {
         post: {
           title: post.title,
           content: post.content,
+          summary: post.summary,
           company: post.company,
           role: post.role,
           postType: post.postType,
