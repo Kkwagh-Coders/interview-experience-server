@@ -161,6 +161,7 @@ const postServices = {
     const update = {
       title: editedPostData.title,
       content: editedPostData.content,
+      summary: editedPostData.summary,
       company: editedPostData.company,
       role: editedPostData.role,
       postType: editedPostData.postType,
