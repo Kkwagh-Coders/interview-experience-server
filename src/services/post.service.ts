@@ -47,7 +47,19 @@ const postServices = {
       throw 'No Post Found with the Given ID';
     }
 
-    return postModel.aggregate([
+    const postList = await postModel
+      .find({
+        company: post.company,
+      })
+      .limit(limit)
+      .select({
+        _id: 1,
+        title: 1,
+      });
+
+    if (postList.length === limit) return postList;
+    limit -= postList.length;
+    const relatedPostList = await postModel.aggregate([
       {
         $search: {
           index: 'RecommendPost',
@@ -78,6 +90,8 @@ const postServices = {
         },
       },
     ]);
+
+    return postList.concat(relatedPostList);
   },
   getAllPosts: (
     filter: IPostFilter,
