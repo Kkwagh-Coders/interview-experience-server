@@ -40,6 +40,45 @@ const postServices = {
       .skip(skip)
       .lean();
   },
+  getRelatedPosts: async (postId: string, limit: number) => {
+    // increment the value of views by 1 and return the post with populated user data
+    const post = await postServices.getPost(postId);
+    if (!post) {
+      throw 'No Post Found with the Given ID';
+    }
+
+    return postModel.aggregate([
+      {
+        $search: {
+          index: 'RecommendPost',
+          compound: {
+            must: [
+              {
+                moreLikeThis: {
+                  like: post,
+                },
+              },
+            ],
+            mustNot: [
+              {
+                equals: {
+                  path: '_id',
+                  value: post._id,
+                },
+              },
+            ],
+          },
+        },
+      },
+      { $limit: limit },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+        },
+      },
+    ]);
+  },
   getAllPosts: (
     filter: IPostFilter,
     sort: string,

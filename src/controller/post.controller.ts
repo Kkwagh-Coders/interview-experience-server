@@ -272,6 +272,33 @@ const postController = {
     }
   },
 
+  getRelatedPosts: async (req: Request, res: Response) => {
+    const postId = req.params['id'];
+    const limit = parseInt(req.query['limit'] as string) - 1;
+
+    // check if the id is a valid mongodb id;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(404).json({ message: 'No such Post found' });
+    }
+
+    if (!limit || limit <= 0) {
+      return res.status(400).json({ message: 'Please provide a valid limit' });
+    }
+
+    try {
+      // Get posts related to the given post
+      const relatedPosts = await postServices.getRelatedPosts(postId, limit);
+
+      return res.status(200).json({
+        message: 'post fetched successfully',
+        relatedPosts,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Something went wrong.....' });
+    }
+  },
+
   getUserPost: async (
     req: TypeRequestBody<{ userId: Types.ObjectId | null }>,
     res: Response,

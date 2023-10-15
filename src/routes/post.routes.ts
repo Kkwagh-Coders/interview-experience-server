@@ -1,9 +1,9 @@
 import cors from 'cors';
 import { Router } from 'express';
-import postController from '../controller/post.controller';
 import corsOptionForCredentials from '../config/cors';
-import isUserAuth from '../middleware/isUserAuth';
+import postController from '../controller/post.controller';
 import cookieDataParser from '../middleware/cookieDataParser';
+import isUserAuth from '../middleware/isUserAuth';
 
 const router = Router();
 
@@ -30,6 +30,14 @@ router.get(
   cors(corsOptionForCredentials),
   cookieDataParser,
   postController.getUserBookmarkedPost,
+);
+
+router.options('/related/:id', cors(corsOptionForCredentials));
+router.get(
+  '/related/:id',
+  cors(corsOptionForCredentials),
+  isUserAuth,
+  postController.getRelatedPosts,
 );
 
 router.options('/user/all/:userId', cors(corsOptionForCredentials));
