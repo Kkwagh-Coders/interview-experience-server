@@ -52,6 +52,9 @@ Change to Project Directory
   cd interview-experience-api
 ```
 
+Add .env to the root directory of the project
+Check the [./src/env.d.ts](./src/env.d.ts) file for environment variables.
+
 Install Dependencies
 
 ```bash
