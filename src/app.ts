@@ -1,8 +1,9 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import routes from './routes';
 import passport from 'passport';
+import routes from './routes';
+import { NotFoundError, SuccessResponse } from './utils/apiResponse';
 
 const app = express();
 
@@ -23,12 +24,12 @@ app.use('/quiz', routes.quizRoutes);
 
 // Home Route
 app.get('/', cors(), async (req, res) => {
-  res.status(200).json({ name: 'Interview Experience API' });
+  return SuccessResponse(res, { name: 'Interview Experience API' });
 });
 
 // Not found route
 app.get('*', cors(), (req, res) => {
-  return res.status(404).json({ message: 'API URL is not valid' });
+  return NotFoundError(res, { message: 'API URL is not valid' });
 });
 
 export default app;

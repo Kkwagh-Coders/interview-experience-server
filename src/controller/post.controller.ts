@@ -6,6 +6,13 @@ import userServices from '../services/user.service';
 import { IPostFilter, IPostForm } from '../types/post.types';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
+import {
+  BadRequestError,
+  InternalServerError,
+  NotFoundError,
+  SuccessResponse,
+  UnauthorizedError,
+} from '../utils/apiResponse';
 import generateSummaryFromHTMLContent from '../utils/generateSummaryFromHTMLContent';
 
 const postController = {
@@ -30,7 +37,7 @@ const postController = {
     if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
-      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+      return InternalServerError(res, { message: 'Limit cannot exceed 100' });
     }
 
     // default page
@@ -79,7 +86,7 @@ const postController = {
       const posts = await postServices.getAllPosts(filters, sort, limit, skip);
 
       if (posts.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'No posts to display',
           data: [],
           page: { previousPage: page === 0 ? undefined : page },
@@ -113,13 +120,13 @@ const postController = {
       const nextPage = page + 2;
       // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
       const previousPage = page === 0 ? undefined : page;
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'post fetched successfully',
         data: response,
         page: { nextPage, previousPage },
       });
     } catch (error) {
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -131,13 +138,13 @@ const postController = {
 
     // check if the id is a valid mongodb id;
     if (!mongoose.Types.ObjectId.isValid(postId)) {
-      return res.status(404).json({ message: 'No such Post found' });
+      return NotFoundError(res, { message: 'No such Post found' });
     }
     try {
       // increment the value of views by 1 and return the post with populated user data
       const post = await postServices.getPost(postId);
       if (!post) {
-        return res.status(404).json({ message: 'No such Post found' });
+        return NotFoundError(res, { message: 'No such Post found' });
       }
       const postAuthor = post.userId.username;
       const postAuthorId = post.userId._id;
@@ -157,7 +164,7 @@ const postController = {
       const isDownVoted = post.downVotes.includes(userId);
       const commentCount = post.comments.length;
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'post fetched successfully',
         post: {
           title: post.title,
@@ -182,7 +189,7 @@ const postController = {
         },
       });
     } catch (error) {
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -196,7 +203,7 @@ const postController = {
     const paramUserId = req.params['userId'];
 
     if (!mongoose.Types.ObjectId.isValid(paramUserId)) {
-      return res.status(404).json({ message: 'No such User found' });
+      return NotFoundError(res, { message: 'No such User found' });
     }
 
     const userId = new Types.ObjectId(paramUserId);
@@ -209,7 +216,7 @@ const postController = {
     if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
-      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+      return InternalServerError(res, { message: 'Limit cannot exceed 100' });
     }
 
     // default page
@@ -225,7 +232,7 @@ const postController = {
         skip,
       );
       if (posts.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'No posts to display',
           data: [],
           page: { previousPage: page === 0 ? undefined : page },
@@ -260,7 +267,7 @@ const postController = {
       const nextPage = page + 2;
       // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
       const previousPage = page === 0 ? undefined : page;
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'bookmarked posts fetched successfully',
         data: response,
         page: { nextPage, previousPage },
@@ -268,7 +275,7 @@ const postController = {
     } catch (error) {
       console.log(error);
 
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -278,24 +285,24 @@ const postController = {
 
     // check if the id is a valid mongodb id;
     if (!mongoose.Types.ObjectId.isValid(postId)) {
-      return res.status(404).json({ message: 'No such Post found' });
+      return NotFoundError(res, { message: 'No such Post found' });
     }
 
     if (!limit || limit <= 0) {
-      return res.status(400).json({ message: 'Please provide a valid limit' });
+      return BadRequestError(res, { message: 'Please provide a valid limit' });
     }
 
     try {
       // Get posts related to the given post
       const relatedPosts = await postServices.getRelatedPosts(postId, limit);
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'post fetched successfully',
         relatedPosts,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -308,7 +315,7 @@ const postController = {
 
     const paramUserId = req.params['userId'];
     if (!Types.ObjectId.isValid(paramUserId)) {
-      return res.status(404).json({ message: 'No such User found' });
+      return NotFoundError(res, { message: 'No such User found' });
     }
     // query page will start from 1;
     let page = parseInt(req.query['page'] as string) - 1;
@@ -318,7 +325,7 @@ const postController = {
     if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
-      return res.status(500).json({ message: 'limit cannot exceed 100' });
+      return InternalServerError(res, { message: 'limit cannot exceed 100' });
     }
 
     if (!page || page < 0) {
@@ -331,7 +338,7 @@ const postController = {
       const posts = await postServices.getUserPosts(userId, limit, skip);
 
       if (posts.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'No posts to display',
           data: [],
           page: { previousPage: page === 0 ? undefined : page },
@@ -362,14 +369,14 @@ const postController = {
 
       // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
       const previousPage = page === 0 ? undefined : page;
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'user posts',
         data: response,
         page: { nextPage, previousPage },
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'something went wrong....' });
+      return InternalServerError(res, { message: 'something went wrong....' });
     }
   },
 
@@ -414,9 +421,9 @@ const postController = {
       !status ||
       !tags
     ) {
-      return res
-        .status(401)
-        .json({ message: 'Please enter all required fields ' });
+      return UnauthorizedError(res, {
+        message: 'Please enter all required fields ',
+      });
     }
 
     // Generating summary
@@ -439,12 +446,13 @@ const postController = {
     // Create post using the post services
     try {
       const post = await postServices.createPost(postData);
-      return res
-        .status(200)
-        .json({ message: 'Post Created Successfully', postId: post._id });
+      return SuccessResponse(res, {
+        message: 'Post Created Successfully',
+        postId: post._id,
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
 
     // TODO: save the post in the user model in the userPost section
@@ -460,9 +468,9 @@ const postController = {
 
     const postId = req.params['id'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post to Delete' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post to Delete',
+      });
     }
 
     let postDeleteResponse: DeleteResult | null = null;
@@ -479,19 +487,19 @@ const postController = {
       }
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
 
     // Check the condition if the post is successfully deleted or not
     if (!postDeleteResponse.acknowledged) {
-      return res.status(400).json({ message: 'Something went wrong...' });
+      return BadRequestError(res, { message: 'Something went wrong...' });
     }
 
     if (postDeleteResponse.deletedCount === 0) {
-      return res.status(404).json({ message: 'Post Could not be Delete' });
+      return NotFoundError(res, { message: 'Post Could not be Delete' });
     }
 
-    return res.status(200).json({ message: 'Post Deleted Successfully' });
+    return SuccessResponse(res, { message: 'Post Deleted Successfully' });
   },
   upVotePost: async (
     req: TypeRequestBody<{
@@ -504,9 +512,9 @@ const postController = {
 
     const postId = req.params['id'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post to Up-Vote' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post to Up-Vote',
+      });
     }
 
     try {
@@ -515,15 +523,15 @@ const postController = {
       // Check if user was already bookmarked
       if (updateDetail.matchedCount === 0) {
         await postServices.nullifyUserVote(postId, userId);
-        return res
-          .status(200)
-          .json({ message: 'Removed Up Vote Successfully' });
+        return SuccessResponse(res, {
+          message: 'Removed Up Vote Successfully',
+        });
       }
 
-      return res.status(200).json({ message: 'Post Up Voted Successfully' });
+      return SuccessResponse(res, { message: 'Post Up Voted Successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
   },
   downVotePost: async (
@@ -537,9 +545,9 @@ const postController = {
 
     const postId = req.params['id'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post to Down-Vote' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post to Down-Vote',
+      });
     }
 
     try {
@@ -548,15 +556,15 @@ const postController = {
       // Check if user was already bookmarked
       if (updateDetail.matchedCount === 0) {
         await postServices.nullifyUserVote(postId, userId);
-        return res
-          .status(200)
-          .json({ message: 'Removed Down Vote Successfully' });
+        return SuccessResponse(res, {
+          message: 'Removed Down Vote Successfully',
+        });
       }
 
-      return res.status(200).json({ message: 'Post Down Voted Successfully' });
+      return SuccessResponse(res, { message: 'Post Down Voted Successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
   },
   addUserBookmark: async (
@@ -570,9 +578,9 @@ const postController = {
 
     const postId = req.params['id'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post to Bookmark' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post to Bookmark',
+      });
     }
 
     try {
@@ -580,13 +588,15 @@ const postController = {
 
       // Check if user was already bookmarked
       if (updateDetail.matchedCount === 0) {
-        return res.status(500).json({ message: 'Post is already Bookmarked' });
+        return InternalServerError(res, {
+          message: 'Post is already Bookmarked',
+        });
       }
 
-      return res.status(200).json({ message: 'Post Bookmarked Successfully' });
+      return SuccessResponse(res, { message: 'Post Bookmarked Successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
   },
   removeUserBookmark: async (
@@ -600,9 +610,9 @@ const postController = {
 
     const postId = req.params['id'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post to Remove Bookmark' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post to Remove Bookmark',
+      });
     }
 
     try {
@@ -613,13 +623,13 @@ const postController = {
 
       // Check if user was already bookmarked
       if (updateDetail.matchedCount === 0) {
-        return res.status(500).json({ message: 'Post is not Bookmarked' });
+        return InternalServerError(res, { message: 'Post is not Bookmarked' });
       }
 
-      return res.status(200).json({ message: 'Post Removed From Bookmark' });
+      return SuccessResponse(res, { message: 'Post Removed From Bookmark' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
   },
 
@@ -628,7 +638,7 @@ const postController = {
     try {
       const data = await postServices.getCompanyAndRole();
       if (!data || data.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'Company and role fetched successfully',
           data: {
             company: [],
@@ -637,7 +647,7 @@ const postController = {
         });
       }
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Company and role fetched successfully',
         data: {
           company: data[0].company ? data[0].company : [],
@@ -646,7 +656,7 @@ const postController = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -685,7 +695,7 @@ const postController = {
 
     // Check if user has passed all values
     if (!postId || !Types.ObjectId.isValid(postId)) {
-      return res.status(401).json({ message: 'NO such post found.... ' });
+      return UnauthorizedError(res, { message: 'NO such post found.... ' });
     }
 
     if (
@@ -700,9 +710,9 @@ const postController = {
       !status ||
       !tags
     ) {
-      return res
-        .status(401)
-        .json({ message: 'Please enter all required fields ' });
+      return UnauthorizedError(res, {
+        message: 'Please enter all required fields ',
+      });
     }
 
     const userId = authTokenData.id;
@@ -731,18 +741,19 @@ const postController = {
 
       if (!post) {
         console.log('Not acknowledged while editing the post');
-        return res.status(400).json({
+        return BadRequestError(res, {
           message:
             'NO such post Found OR You do not have permission to edit this post.... ',
         });
       }
 
-      return res
-        .status(200)
-        .json({ message: 'Post edited succesfully', data: post });
+      return SuccessResponse(res, {
+        message: 'Post edited succesfully',
+        data: post,
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 };

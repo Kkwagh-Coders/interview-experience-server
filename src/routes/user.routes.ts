@@ -4,6 +4,7 @@ import passport from 'passport';
 import corsOptionForCredentials from '../config/cors';
 import userController from '../controller/user.controller';
 import isUserAuth from '../middleware/isUserAuth';
+import { UnauthorizedError } from '../utils/apiResponse';
 
 const router = Router();
 
@@ -101,7 +102,7 @@ router.get(
 // Route to handle for google error
 router.options('/auth/google/failed', cors(corsOptionForCredentials));
 router.get('/auth/google/failed', (req, res) => {
-  return res.status(401).json({ message: 'Login Failure' });
+  return UnauthorizedError(res, { message: 'Login Failure' });
 });
 
 export default router;

@@ -32,11 +32,11 @@ router.get(
   postController.getUserBookmarkedPost,
 );
 
-router.options('/related/:id', cors(corsOptionForCredentials));
+router.options('/related/:id', cors());
 router.get(
   '/related/:id',
-  cors(corsOptionForCredentials),
-  isUserAuth,
+  cors(),
+  // isUserAuth,
   postController.getRelatedPosts,
 );
 
