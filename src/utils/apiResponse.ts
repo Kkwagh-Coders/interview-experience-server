@@ -12,6 +12,10 @@ export const UnauthorizedError = (res: Response, data: object) => {
   return res.status(401).json(data);
 };
 
+export const ForbiddenError = (res: Response, data: object) => {
+  return res.status(403).json(data);
+};
+
 export const NotFoundError = (res: Response, data: object) => {
   return res.status(404).json(data);
 };
