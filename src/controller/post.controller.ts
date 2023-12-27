@@ -274,7 +274,7 @@ const postController = {
 
   getRelatedPosts: async (req: Request, res: Response) => {
     const postId = req.params['id'];
-    const limit = parseInt(req.query['limit'] as string) - 1;
+    const limit = parseInt(req.query['limit'] as string);
 
     // check if the id is a valid mongodb id;
     if (!mongoose.Types.ObjectId.isValid(postId)) {

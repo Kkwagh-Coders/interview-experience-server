@@ -49,7 +49,7 @@ const postServices = {
 
     const postList = await postModel
       .find({
-        company: post.company,
+        $and: [{ company: post.company }, { _id: { $ne: post._id } }],
       })
       .limit(limit)
       .select({
@@ -58,7 +58,16 @@ const postServices = {
       });
 
     if (postList.length === limit) return postList;
+
+    // Find all the posts to exclude
+    const excludePostIds = [post._id];
+    for (let i = 0; i < postList.length; i++) {
+      excludePostIds.push(postList[i]._id);
+    }
+
+    // Calculate the new limit
     limit -= postList.length;
+
     const relatedPostList = await postModel.aggregate([
       {
         $search: {
@@ -67,15 +76,19 @@ const postServices = {
             must: [
               {
                 moreLikeThis: {
-                  like: post,
+                  like: {
+                    title: post.title,
+                    content: post.content,
+                    postType: post.postType,
+                  },
                 },
               },
             ],
             mustNot: [
               {
-                equals: {
+                in: {
                   path: '_id',
-                  value: post._id,
+                  value: excludePostIds,
                 },
               },
             ],
