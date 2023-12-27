@@ -4,6 +4,13 @@ import { Types } from 'mongoose';
 import commentServices from '../services/comment.service';
 import { TypeRequestBody } from '../types/request.types';
 import { IAuthToken } from '../types/token.types';
+import {
+  BadRequestError,
+  InternalServerError,
+  NotFoundError,
+  SuccessResponse,
+  UnauthorizedError,
+} from '../utils/apiResponse';
 
 const commentController = {
   getComment: async (
@@ -12,7 +19,7 @@ const commentController = {
   ) => {
     const postId = req.params['postid'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res.status(404).json({ message: 'No such post found...' });
+      return NotFoundError(res, { message: 'No such post found...' });
     }
 
     // query page = 0 for the backend that's why (-1)
@@ -22,7 +29,7 @@ const commentController = {
 
     if (!limit || limit <= 0) limit = 10;
     if (limit > 100) {
-      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+      return InternalServerError(res, { message: 'Limit cannot exceed 100' });
     }
 
     if (!page || page < 0) {
@@ -35,7 +42,7 @@ const commentController = {
       const comments = await commentServices.getComment(postId, skip, limit);
 
       if (!comments || comments.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'No comments',
           data: [],
           page: {
@@ -47,14 +54,14 @@ const commentController = {
 
       const previousPage = page === 0 ? undefined : page;
       const nextPage = page + 2;
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'comments fetched successfully',
         data: comments,
         page: { nextPage, previousPage },
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong....' });
+      return InternalServerError(res, { message: 'Something went wrong....' });
     }
   },
   createComment: async (
@@ -69,15 +76,15 @@ const commentController = {
 
     const postId = req.params['postid'];
     if (!Types.ObjectId.isValid(postId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid post to create comment' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid post to create comment',
+      });
     }
 
     if (!content) {
-      return res
-        .status(401)
-        .json({ message: 'Comment is Empty, please provide content' });
+      return UnauthorizedError(res, {
+        message: 'Comment is Empty, please provide content',
+      });
     }
 
     try {
@@ -88,18 +95,18 @@ const commentController = {
       );
 
       if (!commentId) {
-        return res
-          .status(404)
-          .json({ message: 'Please provide a valid Post to Comment' });
+        return NotFoundError(res, {
+          message: 'Please provide a valid Post to Comment',
+        });
       }
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Comment Created Successfully',
         commentId: commentId,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
   deleteComment: async (req: Request, res: Response) => {
@@ -109,9 +116,9 @@ const commentController = {
     const postId = req.params['postid'];
     const commentId = req.params['commentid'];
     if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Comment to Delete' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Comment to Delete',
+      });
     }
 
     try {
@@ -134,19 +141,17 @@ const commentController = {
 
       // Check the condition if the given comment was successfully deleted or not
       if (!commentDeleteResponse.acknowledged) {
-        return res.status(400).json({ message: 'Something went wrong...' });
+        return BadRequestError(res, { message: 'Something went wrong...' });
       }
 
       if (commentDeleteResponse.modifiedCount === 0) {
-        return res
-          .status(404)
-          .json({ message: 'Comment Could not be Deleted' });
+        return NotFoundError(res, { message: 'Comment Could not be Deleted' });
       }
 
-      return res.status(200).json({ message: 'Comment Deleted Successfully' });
+      return SuccessResponse(res, { message: 'Comment Deleted Successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
   },
   getCommentReplies: async (req: Request, res: Response) => {
@@ -154,9 +159,9 @@ const commentController = {
     const commentId = req.params['commentid'];
 
     if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post with Comment to reply' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post with Comment to reply',
+      });
     }
 
     let page = parseInt(req.query['page'] as string) - 1;
@@ -166,7 +171,7 @@ const commentController = {
     if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
-      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+      return InternalServerError(res, { message: 'Limit cannot exceed 100' });
     }
 
     // default page
@@ -186,7 +191,7 @@ const commentController = {
       );
 
       if (!replies || replies.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'No replies to display',
           data: [],
           page: {
@@ -202,14 +207,14 @@ const commentController = {
       // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
       const previousPage = page === 0 ? undefined : page;
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Replies fetched successfully',
         data: replies,
         page: { nextPage, previousPage },
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
   createCommentReply: async (
@@ -225,15 +230,15 @@ const commentController = {
     const postId = req.params['postid'];
     const commentId = req.params['commentid'];
     if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Post with Comment to reply' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Post with Comment to reply',
+      });
     }
 
     if (!content) {
-      return res
-        .status(401)
-        .json({ message: 'Reply is Empty, please provide content' });
+      return UnauthorizedError(res, {
+        message: 'Reply is Empty, please provide content',
+      });
     }
 
     try {
@@ -245,18 +250,18 @@ const commentController = {
       );
 
       if (!replyId) {
-        return res
-          .status(404)
-          .json({ message: 'Please provide a valid Comment to Reply' });
+        return NotFoundError(res, {
+          message: 'Please provide a valid Comment to Reply',
+        });
       }
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Replied to the Comment Successfully',
         replyId: replyId,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
   deleteCommentReply: async (
@@ -273,9 +278,9 @@ const commentController = {
       !Types.ObjectId.isValid(commentId) ||
       !Types.ObjectId.isValid(replyId)
     ) {
-      return res
-        .status(404)
-        .json({ message: 'Please provide a valid Reply to be deleted....' });
+      return NotFoundError(res, {
+        message: 'Please provide a valid Reply to be deleted....',
+      });
     }
 
     try {
@@ -297,17 +302,19 @@ const commentController = {
       }
 
       if (!response.acknowledged) {
-        return res.status(500).json({ message: 'something went wrong.....' });
+        return InternalServerError(res, {
+          message: 'something went wrong.....',
+        });
       }
 
       if (!response.modifiedCount) {
-        return res.status(404).json({ message: 'no such reply found' });
+        return NotFoundError(res, { message: 'no such reply found' });
       }
 
-      return res.status(200).json({ message: 'Reply deleted successfully' });
+      return SuccessResponse(res, { message: 'Reply deleted successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong...' });
+      return InternalServerError(res, { message: 'Something went wrong...' });
     }
   },
 };
