@@ -16,6 +16,10 @@ export const NotFoundError = (res: Response, data: object) => {
   return res.status(404).json(data);
 };
 
+export const PreconditionFailedError = (res: Response, data: object) => {
+  return res.status(412).json(data);
+};
+
 export const InternalServerError = (res: Response, data: object) => {
   return res.status(500).json(data);
 };
