@@ -11,6 +11,14 @@ import {
   IForgotPasswordToken,
 } from '../types/token.types';
 import { IUser } from '../types/user.types';
+import {
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+  SuccessResponse,
+  UnauthorizedError,
+} from '../utils/apiResponse';
 import decodeToken from '../utils/token/decodeToken';
 import generateAuthToken from '../utils/token/generateAuthToken';
 import generateEmailVerificationToken from '../utils/token/generateEmailVerificationToken';
@@ -45,7 +53,7 @@ const userController = {
 
     // if email or password is undefined
     if (!email || !password) {
-      return res.status(401).json({
+      return UnauthorizedError(res, {
         message: 'Incorrect Username or Password',
       });
     }
@@ -71,7 +79,7 @@ const userController = {
 
       // Check if email is verified or not
       if (!user.isEmailVerified) {
-        return res.status(401).json({ message: 'Email is not verified' });
+        return UnauthorizedError(res, { message: 'Email is not verified' });
       }
 
       // generate JWT token
@@ -81,7 +89,7 @@ const userController = {
       res.cookie('token', token, cookieOptions);
 
       // Remove the password
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Login Successful',
         user: {
           id: user._id,
@@ -99,7 +107,7 @@ const userController = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -153,7 +161,7 @@ const userController = {
       const oldUser = await userServices.findUser(email);
 
       if (oldUser && oldUser.isEmailVerified) {
-        return res.status(404).json({ message: 'Email already exists' });
+        return NotFoundError(res, { message: 'Email already exists' });
       }
 
       if (oldUser && !oldUser.isEmailVerified) {
@@ -192,12 +200,12 @@ const userController = {
       // send email to the user for verification
       await sendEmailVerificationMail(email, token, user.username);
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Account created successfully, please verify your email....',
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Something went wrong.....' });
+      return InternalServerError(res, { message: 'Something went wrong.....' });
     }
   },
 
@@ -218,11 +226,11 @@ const userController = {
       // check if email is not-registered
       const user = await userServices.findUser(email);
       if (!user) {
-        return res.status(401).json({ message: 'No such email found' });
+        return UnauthorizedError(res, { message: 'No such email found' });
       }
 
       if (!user.isEmailVerified) {
-        return res.status(400).json({ message: 'Please Verify your Email' });
+        return BadRequestError(res, { message: 'Please Verify your Email' });
       }
 
       // Creating a jwt token and sending it to the user
@@ -231,12 +239,14 @@ const userController = {
       // send email to the user
       sendForgotPasswordEmail(email, token, user.username);
 
-      return res
-        .status(200)
-        .json({ message: `A password reset link is sent to ${email}` });
+      return SuccessResponse(res, {
+        message: `A password reset link is sent to ${email}`,
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Error, Please try again later' });
+      return InternalServerError(res, {
+        message: 'Error, Please try again later',
+      });
     }
   },
 
@@ -249,25 +259,25 @@ const userController = {
     const resetPasswordToken = req.params['token'];
 
     if (!email) {
-      return res.status(401).json({ message: 'Please enter Email' });
+      return UnauthorizedError(res, { message: 'Please enter Email' });
     }
 
     if (!newPassword) {
-      return res.status(401).json({ message: 'Please enter new Password ' });
+      return UnauthorizedError(res, { message: 'Please enter new Password ' });
     }
 
     try {
       const tokenData = decodeToken(resetPasswordToken) as IForgotPasswordToken;
 
       if (email !== tokenData.email) {
-        return res.status(403).json({ message: 'Reset Link is not valid' });
+        return ForbiddenError(res, { message: 'Reset Link is not valid' });
       }
 
       const user = await userServices.findUser(tokenData.email);
       if (!user) {
-        return res
-          .status(401)
-          .json({ message: 'Please create a new Reset Password Link' });
+        return UnauthorizedError(res, {
+          message: 'Please create a new Reset Password Link',
+        });
       }
 
       // Hash the password
@@ -275,17 +285,17 @@ const userController = {
 
       // Resetting the password
       await userServices.resetPassword(tokenData.email, hashedNewPassword);
-      return res.status(200).json({ message: 'Password changed successfully' });
+      return SuccessResponse(res, { message: 'Password changed successfully' });
     } catch (error) {
       console.log(error);
-      return res
-        .status(500)
-        .json({ message: 'Error, generate new password link' });
+      return InternalServerError(res, {
+        message: 'Error, generate new password link',
+      });
     }
   },
   logoutUser: (req: Request, res: Response) => {
     res.clearCookie('token', cookieOptions);
-    return res.status(200).json({ message: 'User Logout successful' });
+    return SuccessResponse(res, { message: 'User Logout successful' });
   },
   verifyEmail: async (req: Request, res: Response) => {
     const emailVerificationToken = req.params['token'];
@@ -323,18 +333,18 @@ const userController = {
     const userData = req.body.authTokenData;
 
     if (!userData) {
-      return res.status(403).json({ message: 'User not logged in' });
+      return ForbiddenError(res, { message: 'User not logged in' });
     }
 
     try {
       // Delete the user Account
       await userServices.deleteUser(userData.id);
-      return res.status(200).json({ message: 'User Account deleted' });
+      return SuccessResponse(res, { message: 'User Account deleted' });
     } catch (error) {
       console.log(error);
-      return res
-        .status(500)
-        .json({ message: 'Error during Deletion, Please try again later' });
+      return InternalServerError(res, {
+        message: 'Error during Deletion, Please try again later',
+      });
     }
   },
   getLoginStatus: async (req: Request, res: Response) => {
@@ -355,7 +365,7 @@ const userController = {
       const user = await userServices.findUser(authTokenData.email);
 
       if (!user) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           isLoggedIn: false,
           isAdmin: false,
           admin: null,
@@ -377,7 +387,7 @@ const userController = {
         linkedin: user.linkedin,
       };
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         isLoggedIn: true,
         isAdmin: user.isAdmin,
         admin: null,
@@ -418,7 +428,9 @@ const userController = {
     } = req.body;
 
     if (!username || !branch || !passingYear || !designation || !about) {
-      return res.status(401).json({ message: 'Please enter all the fields ' });
+      return UnauthorizedError(res, {
+        message: 'Please enter all the fields ',
+      });
     }
 
     const updatedProfile = {
@@ -435,12 +447,15 @@ const userController = {
     const userId = req.body.authTokenData.id;
     try {
       const user = await userServices.editProfile(userId, updatedProfile);
-      return res
-        .status(200)
-        .json({ message: 'User Profile Edited Successfully', data: user });
+      return SuccessResponse(res, {
+        message: 'User Profile Edited Successfully',
+        data: user,
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'something went wrong......' });
+      return InternalServerError(res, {
+        message: 'something went wrong......',
+      });
     }
   },
 
@@ -449,7 +464,7 @@ const userController = {
 
     // if not a valid user id
     if (!mongoose.Types.ObjectId.isValid(paramId)) {
-      return res.status(404).json({ message: 'No such user found' });
+      return NotFoundError(res, { message: 'No such user found' });
     }
 
     const userId = new Types.ObjectId(paramId);
@@ -457,7 +472,7 @@ const userController = {
       const userProfile = await userServices.getUserProfile(userId);
 
       if (userProfile.length === 0) {
-        return res.status(404).json({ message: 'No such User found' });
+        return NotFoundError(res, { message: 'No such User found' });
       }
 
       // if no post
@@ -469,10 +484,10 @@ const userController = {
           downVoteCount: 0,
         });
       }
-      return res.status(200).json({ message: 'ok', data: userProfile });
+      return SuccessResponse(res, { message: 'ok', data: userProfile });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'something went wrong...' });
+      return InternalServerError(res, { message: 'something went wrong...' });
     }
   },
 
@@ -486,7 +501,7 @@ const userController = {
     if (!limit || limit <= 0) limit = 10;
 
     if (limit > 100) {
-      return res.status(500).json({ message: 'Limit cannot exceed 100' });
+      return InternalServerError(res, { message: 'Limit cannot exceed 100' });
     }
 
     const skip = limit * page;
@@ -494,7 +509,7 @@ const userController = {
       const userList = await userServices.searchUser(search, limit, skip);
 
       if (userList.length === 0) {
-        return res.status(200).json({
+        return SuccessResponse(res, {
           message: 'No posts to display',
           data: [],
           page: { previousPage: page === 0 ? undefined : page },
@@ -506,14 +521,14 @@ const userController = {
       // previous page is returned as page because for 1 based indexing page is the previous page as page-1 is done
       const previousPage = page === 0 ? undefined : page;
 
-      return res.status(200).json({
+      return SuccessResponse(res, {
         message: 'Users fetched successfully',
         data: userList,
         page: { nextPage, previousPage },
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'something went wrong...' });
+      return InternalServerError(res, { message: 'something went wrong...' });
     }
   },
   googleLogin: async (req: Request, res: Response) => {
@@ -543,7 +558,7 @@ const userController = {
     const token = req.params['token'];
     res.cookie('token', token, cookieOptions);
 
-    return res.status(200).json({ message: 'Token set successfully' });
+    return SuccessResponse(res, { message: 'Token set successfully' });
   },
 };
 
