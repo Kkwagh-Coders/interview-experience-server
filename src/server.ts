@@ -14,7 +14,7 @@ const PORT = process.env['PORT'] || 8080;
 
 app.listen(PORT, () => {
   console.log(`Listening at PORT: ${PORT}`);
-});
 
-// Create a Job once App is started
-preventServerSleep();
+  // Create a Job once App is started
+  preventServerSleep();
+});
