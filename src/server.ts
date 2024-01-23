@@ -10,6 +10,10 @@ import './config/passport';
 import app from './app';
 import preventServerSleep from './utils/preventServerSleep';
 
+// Display the Node version
+const NODE_VERSION = process.env['NODE_VERSION'];
+console.info('Node Version: ', NODE_VERSION);
+
 const PORT = process.env['PORT'] || 8080;
 
 app.listen(PORT, () => {
