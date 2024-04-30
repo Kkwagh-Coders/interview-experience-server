@@ -3,8 +3,12 @@ import { IAuthToken } from '../types/token.types';
 import decodeToken from '../utils/token/decodeToken';
 
 // A middleware to check if the user is authenticated or not, before any action
-const cookieDataParser = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies['token'];
+const tokenDataParser = (req: Request, res: Response, next: NextFunction) => {
+  let token = req.headers['token'];
+
+  if (Array.isArray(token)) {
+    token = token[0];
+  }
 
   if (!token) {
     req.body.userId = null;
@@ -25,4 +29,4 @@ const cookieDataParser = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default cookieDataParser;
+export default tokenDataParser;

@@ -39,13 +39,6 @@ router.get(
   userController.getUserProfile,
 );
 
-router.options('/token/google/:token', cors(corsOptionForCredentials));
-router.post(
-  '/token/google/:token',
-  cors(corsOptionForCredentials),
-  userController.setToken,
-);
-
 router.options('/forgot-password', cors(corsOptionForCredentials));
 router.post(
   '/forgot-password',

@@ -16,25 +16,6 @@ import generateAuthToken from '../utils/token/generateAuthToken';
 import generateEmailVerificationToken from '../utils/token/generateEmailVerificationToken';
 import generateForgotPasswordToken from '../utils/token/generateForgotPasswordToken';
 
-const EXPIRY_DAYS = 180;
-
-// Solving cookie issue: https://stackoverflow.com/questions/66503751/cross-domain-session-cookie-express-api-on-heroku-react-app-on-netlify/66553425#66553425?newreg=fcbd128fac8c4569a41212157ee2c173
-type COOKIE_OPTIONS = {
-  sameSite: 'none' | 'lax';
-  secure: boolean;
-  httpOnly: boolean;
-  maxAge: number;
-  path: string;
-};
-
-const cookieOptions: COOKIE_OPTIONS = {
-  sameSite: process.env['NODE_ENV'] === 'production' ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
-  secure: process.env['NODE_ENV'] === 'production', // must be true if sameSite='none',
-  httpOnly: true,
-  maxAge: EXPIRY_DAYS * (24 * 60 * 60 * 1000),
-  path: '/',
-};
-
 const userController = {
   loginUser: async (
     req: TypeRequestBody<{ email?: string; password?: string }>,
@@ -77,12 +58,10 @@ const userController = {
       // generate JWT token
       const token = generateAuthToken(user._id, email, user.isAdmin);
 
-      //setting cookie
-      res.cookie('token', token, cookieOptions);
-
       // Remove the password
       return res.status(200).json({
         message: 'Login Successful',
+        token,
         user: {
           id: user._id,
           username: user.username,
@@ -284,7 +263,6 @@ const userController = {
     }
   },
   logoutUser: (req: Request, res: Response) => {
-    res.clearCookie('token', cookieOptions);
     return res.status(200).json({ message: 'User Logout successful' });
   },
   verifyEmail: async (req: Request, res: Response) => {
@@ -338,7 +316,11 @@ const userController = {
     }
   },
   getLoginStatus: async (req: Request, res: Response) => {
-    const token = req.cookies['token'];
+    let token = req.headers['token'];
+
+    if (Array.isArray(token)) {
+      token = token[0];
+    }
 
     // We are using 200 because the request was successful and we return isLoggedIn false
     if (!token) {
@@ -532,18 +514,9 @@ const userController = {
     // generate JWT token
     const token = generateAuthToken(user._id, email, user.isAdmin);
 
-    //setting cookie
-    // res.cookie('token', token, cookieOptions);
-
     // Successful authentication, redirect home.
     const clientURL = process.env['CLIENT_BASE_URL'] || 'http://localhost:3000';
     return res.redirect(`${clientURL}/token/google/${token}`);
-  },
-  setToken: (req: Request, res: Response) => {
-    const token = req.params['token'];
-    res.cookie('token', token, cookieOptions);
-
-    return res.status(200).json({ message: 'Token set successfully' });
   },
 };
 

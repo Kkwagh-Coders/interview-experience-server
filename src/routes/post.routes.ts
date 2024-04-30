@@ -2,7 +2,7 @@ import cors from 'cors';
 import { Router } from 'express';
 import corsOptionForCredentials from '../config/cors';
 import postController from '../controller/post.controller';
-import cookieDataParser from '../middleware/cookieDataParser';
+import tokenDataParser from '../middleware/tokenDataParser';
 import isUserAuth from '../middleware/isUserAuth';
 
 const router = Router();
@@ -12,7 +12,7 @@ router.options('', cors(corsOptionForCredentials));
 router.get(
   '',
   cors(corsOptionForCredentials),
-  cookieDataParser,
+  tokenDataParser,
   postController.getAllPost,
 );
 
@@ -28,7 +28,7 @@ router.options('/user/bookmarked/:userId', cors(corsOptionForCredentials));
 router.get(
   '/user/bookmarked/:userId',
   cors(corsOptionForCredentials),
-  cookieDataParser,
+  tokenDataParser,
   postController.getUserBookmarkedPost,
 );
 
@@ -44,7 +44,7 @@ router.options('/user/all/:userId', cors(corsOptionForCredentials));
 router.get(
   '/user/all/:userId',
   cors(corsOptionForCredentials),
-  cookieDataParser,
+  tokenDataParser,
   postController.getUserPost,
 );
 
